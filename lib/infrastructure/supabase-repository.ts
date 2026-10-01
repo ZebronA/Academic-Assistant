@@ -84,6 +84,36 @@ export class SupabaseAcademicRepository implements AcademicRepository {
     return data;
   }
 
+  async updateCourse(input: { userId: string; courseId: string; code: string; name: string; courseType: CreateCourseInput["courseType"] }) {
+    await requireCurrentUser(this.client, input.userId);
+    const { data, error } = await this.client
+      .from("courses")
+      .update({
+        code: input.code.trim().toUpperCase(),
+        name: input.name.trim(),
+        course_type: input.courseType,
+      })
+      .eq("id", input.courseId)
+      .eq("user_id", input.userId)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async archiveCourse(userId: string, courseId: string) {
+    await requireCurrentUser(this.client, userId);
+    const { data, error } = await this.client
+      .from("courses")
+      .update({ is_active: false })
+      .eq("id", courseId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
   async listCourseStates(userId: string) {
     await requireCurrentUser(this.client, userId);
     const { data, error } = await this.client
