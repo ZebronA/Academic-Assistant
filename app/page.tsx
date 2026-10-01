@@ -18,7 +18,7 @@ import { calculateNextAction } from "@/lib/domain/priority-engine";
 import type { AssessmentType, CourseState, TaskType } from "@/lib/domain/types";
 import { TimetableImport } from "@/components/timetable-import";
 
-type Period = { id: string; name: string; starts_on: string; ends_on: string };
+type Period = { id: string; name: string; academic_year_id: string; semester: 1 | 2; starts_on: string; ends_on: string };
 type CourseType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
 type Course = { id: string; code: string; name: string; course_type: CourseType };
 type State = {
@@ -100,7 +100,9 @@ export default function Home() {
   const [assessmentDueAt, setAssessmentDueAt] = useState("");
   const [assessmentWeight, setAssessmentWeight] = useState("");
 
-  const [periodName, setPeriodName] = useState("Semester 1 — 2026");
+  const [periodName, setPeriodName] = useState("Semester 1");
+  const [academicYear, setAcademicYear] = useState("2026/27");
+  const [semester, setSemester] = useState<1 | 2>(1);
   const [periodStart, setPeriodStart] = useState("2026-09-01");
   const [periodEnd, setPeriodEnd] = useState("2026-12-31");
   const [courseCode, setCourseCode] = useState("");
@@ -193,6 +195,8 @@ export default function Home() {
       await createAcademicPeriod(repository, {
         userId,
         name: periodName,
+        academicYear,
+        semester,
         startsOn: periodStart,
         endsOn: periodEnd,
       });
