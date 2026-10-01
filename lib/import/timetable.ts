@@ -65,7 +65,7 @@ function extractCandidateRecords(text: string) {
 }
 
 export async function extractTimetableCourses(file: File): Promise<ImportedCourse[]> {
-  const pdfjs = await import("pdfjs-dist/webpack.mjs");
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const data = new Uint8Array(await file.arrayBuffer());
   const pdf = await pdfjs.getDocument({ data }).promise;
 
