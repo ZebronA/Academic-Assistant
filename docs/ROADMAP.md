@@ -10,7 +10,7 @@ academic reality → evidence → state → priority → action → outcome → 
 
 ## 2. Current Starting Point
 
-The project has a Next.js/React/TypeScript application, Git/GitHub repository, Supabase project, initial academic schema, row-level security, ownership constraints, tasks, assessments, recurring requirements, timetable entries, events, observations, study sessions, course state, and state history.
+The project has a Next.js/React/TypeScript application, Git/GitHub repository, Supabase project, initial academic schema, row-level security, ownership constraints, tasks, assessments, recurring requirements, timetable entries, events, observations, study sessions, unit state, and state history.
 
 The existing database is a foundation. It must be reconciled against the canonical domain documentation before application logic is built around it.
 
@@ -21,8 +21,8 @@ The MVP domain is now sufficiently defined to implement the core decision loop.
 Established MVP concepts:
 
 - academic period
-- course
-- course state
+- unit
+- unit state
 - task
 - assessment
 - recurring requirement
@@ -30,7 +30,7 @@ Established MVP concepts:
 - academic event
 - observation
 - study session
-- course state history
+- unit state history
 - protected preservation state
 - deterministic priority decision
 
@@ -39,7 +39,7 @@ The MVP intentionally defers:
 - recurring occurrence generation
 - persistent availability
 - assessment result entity
-- richer course characteristics
+- richer unit characteristics
 - assistant interface
 - reminders
 - integrations
@@ -120,7 +120,7 @@ Build next-action selection from:
 
 Requirements:
 
-- actions are evaluated by current situation, not permanent course ranking
+- actions are evaluated by current situation, not permanent unit ranking
 - infeasible actions are removed
 - reasons are retained
 - timetable disruption triggers recalculation
@@ -139,7 +139,7 @@ NEEDS ATTENTION
 gates / deadlines / backlog
 
 ACADEMIC STATE
-course conditions
+unit conditions
 
 AVAILABLE
 current opportunity
@@ -151,7 +151,7 @@ recommended action + reason + duration
 Initial sections:
 
 - dashboard
-- courses
+- units
 - tasks
 - assessments
 - timetable
@@ -221,7 +221,7 @@ It must never bypass validation or become the source of truth.
 
 ## 12. Phase 10 — Reminders
 
-Later, derive reminders from persistent facts and current priority for classes, changed classes, online requirements, quizzes, assignments, assessments, backlog, neglected courses, and promised actions.
+Later, derive reminders from persistent facts and current priority for classes, changed classes, online requirements, quizzes, assignments, assessments, backlog, neglected units, and promised actions.
 
 Do not flood the student with reminders.
 
@@ -231,7 +231,7 @@ Later add scores, marks, feedback, topic-level weaknesses, and assessment eviden
 
 ## 14. Phase 12 — Integrations
 
-Potential later integrations include calendar, university timetable, LMS, notifications, and imported course material.
+Potential later integrations include calendar, university timetable, LMS, notifications, and imported unit material.
 
 Imported information must preserve provenance and must not silently become unquestioned truth.
 
@@ -247,14 +247,14 @@ Personalization may adjust recommendations but must not override explicit academ
 
 - authenticated user
 - academic period
-- courses
+- units
 - tasks
 - assessments
 - timetable
 - recurring requirements
 - study sessions
 - observations/events
-- course state
+- unit state
 - state history
 - deterministic state engine
 - deterministic priority engine
@@ -265,7 +265,7 @@ Personalization may adjust recommendations but must not override explicit academ
 
 - recurring occurrence generation
 - persistent availability model
-- richer course characteristics
+- richer unit characteristics
 - assessment results
 - natural-language assistant
 - reminders
@@ -298,7 +298,7 @@ These can hide whether the core academic decision loop actually works.
 - weakness produces targeted actions
 - completion triggers recalculation
 - timetable disruption changes opportunity
-- there is no permanent course ranking
+- there is no permanent unit ranking
 
 ### Assistant
 
@@ -334,7 +334,7 @@ These can hide whether the core academic decision loop actually works.
 After the core model works, enter the actual semester through the product:
 
 - current academic period
-- courses
+- units
 - timetable
 - known assessments
 - assignments
