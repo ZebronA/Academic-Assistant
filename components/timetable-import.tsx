@@ -1,12 +1,12 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { createCourse } from "@/lib/application/commands";
+import { createUnit } from "@/lib/application/commands";
 import { SupabaseAcademicRepository } from "@/lib/infrastructure/supabase-repository";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { extractTimetableCourses, type ImportedCourse } from "@/lib/import/timetable";
+import { extractTimetableUnits, type ImportedUnit } from "@/lib/import/timetable";
 
-type CourseType = ImportedCourse["courseType"];
+type UnitType = ImportedUnit["unitType"];
 
 const client = getSupabaseClient();
 const repository = new SupabaseAcademicRepository(client);
@@ -25,7 +25,7 @@ export function TimetableImport({
   onImported: () => Promise<void>;
 }) {
   const [file, setFile] = useState<File | null>(null);
-  const [courses, setCourses] = useState<ImportedCourse[]>([]);
+  const [units, setUnits] = useState<ImportedUnit[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -37,8 +37,8 @@ export function TimetableImport({
     setMessage("");
 
     try {
-      const extracted = await extractTimetableCourses(file);
-      setCourses(extracted);
+      const extracted = await extractTimetableUnits(file);
+      setUnits(extracted);
       setMessage(
         extracted.length
           ? "Review the detected units before importing them."
@@ -51,52 +51,52 @@ export function TimetableImport({
     }
   }
 
-  function updateCourse(index: number, patch: Partial<ImportedCourse>) {
-    setCourses((current) =>
-      current.map((course, courseIndex) =>
-        courseIndex === index ? { ...course, ...patch } : course,
+  function updateUnit(index: number, patch: Partial<ImportedUnit>) {
+    setUnits((current) =>
+      current.map((unit, unitIndex) =>
+        unitIndex === index ? { ...unit, ...patch } : unit,
       ),
     );
   }
 
-  function removeCourse(index: number) {
-    setCourses((current) => current.filter((_, courseIndex) => courseIndex !== index));
+  function removeUnit(index: number) {
+    setUnits((current) => current.filter((_, unitIndex) => unitIndex !== index));
   }
 
-  async function importCourses() {
-    if (!courses.length) return;
+  async function importUnits() {
+    if (!units.length) return;
 
     setBusy(true);
     setMessage("");
 
     try {
-      const existingCourses = await repository.listCourses(userId, academicPeriodId);
+      const existingUnits = await repository.listUnits(userId, academicPeriodId);
       const existingCodes = new Set(
-        existingCourses.map((course) => String((course as { code?: string }).code ?? "").trim().toUpperCase()),
+        existingUnits.map((unit) => String((unit as { code?: string }).code ?? "").trim().toUpperCase()),
       );
       const imported: string[] = [];
       const skipped: string[] = [];
 
-      for (const course of courses) {
-        const code = course.code.trim().toUpperCase();
+      for (const unit of units) {
+        const code = unit.code.trim().toUpperCase();
 
         if (existingCodes.has(code)) {
           skipped.push(code);
           continue;
         }
 
-        await createCourse(repository, {
+        await createUnit(repository, {
           userId,
           academicPeriodId,
           code,
-          name: course.name,
-          courseType: course.courseType,
+          name: unit.name,
+          unitType: unit.unitType,
         });
         existingCodes.add(code);
         imported.push(code);
       }
 
-      setCourses([]);
+      setUnits([]);
       setFile(null);
       setMessage(
         skipped.length
@@ -150,7 +150,7 @@ export function TimetableImport({
         </button>
       </form>
 
-      {courses.length > 0 && (
+      {units.length > 0 && (
         <div className="mt-6">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -159,29 +159,29 @@ export function TimetableImport({
                 Correct anything the PDF reader misunderstood before saving.
               </p>
             </div>
-            <span className="text-xs text-zinc-500">{courses.length} detected</span>
+            <span className="text-xs text-zinc-500">{units.length} detected</span>
           </div>
 
           <div className="mt-4 space-y-3">
-            {courses.map((course, index) => (
-              <div key={course.code + index} className="grid gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 p-3 md:grid-cols-[120px_1fr_160px_auto]">
+            {units.map((unit, index) => (
+              <div key={unit.code + index} className="grid gap-3 rounded-xl border border-zinc-800 bg-zinc-950/60 p-3 md:grid-cols-[120px_1fr_160px_auto]">
                 <input
                   className={inputClass()}
-                  value={course.code}
-                  onChange={(event) => updateCourse(index, { code: event.target.value.toUpperCase() })}
+                  value={unit.code}
+                  onChange={(event) => updateUnit(index, { code: event.target.value.toUpperCase() })}
                   aria-label={"Unit code " + (index + 1)}
                 />
                 <input
                   className={inputClass()}
-                  value={course.name}
-                  onChange={(event) => updateCourse(index, { name: event.target.value })}
+                  value={unit.name}
+                  onChange={(event) => updateUnit(index, { name: event.target.value })}
                   aria-label={"Unit name " + (index + 1)}
                 />
                 <select
                   className={inputClass()}
-                  value={course.courseType}
+                  value={unit.unitType}
                   onChange={(event) =>
-                    updateCourse(index, { courseType: event.target.value as CourseType })
+                    updateUnit(index, { unitType: event.target.value as UnitType })
                   }
                   aria-label={"Delivery " + (index + 1)}
                 >
@@ -194,7 +194,7 @@ export function TimetableImport({
                 </select>
                 <button
                   type="button"
-                  onClick={() => removeCourse(index)}
+                  onClick={() => removeUnit(index)}
                   className="rounded-xl border border-zinc-700 px-4 py-3 text-sm text-zinc-400 hover:bg-zinc-900 hover:text-white"
                 >
                   Remove
@@ -205,11 +205,11 @@ export function TimetableImport({
 
           <button
             type="button"
-            onClick={() => void importCourses()}
+            onClick={() => void importUnits()}
             disabled={busy}
             className="mt-4 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-950 disabled:opacity-50"
           >
-            {busy ? "Importing..." : "Confirm and import " + courses.length + " units"}
+            {busy ? "Importing..." : "Confirm and import " + units.length + " units"}
           </button>
         </div>
       )}
