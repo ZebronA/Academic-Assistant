@@ -9,6 +9,8 @@ export type ConfirmationStatus = "proposed" | "confirmed" | "rejected";
 export interface CreateAcademicPeriodInput {
   userId: string;
   name: string;
+  academicYear: string;
+  semester: 1 | 2;
   startsOn: string;
   endsOn: string;
 }
