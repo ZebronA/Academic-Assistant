@@ -7,22 +7,22 @@ import {
   completeTask,
   createAcademicPeriod,
   createAssessment,
-  createCourse,
-  updateCourse,
-  archiveCourse,
+  createUnit,
+  updateUnit,
+  archiveUnit,
   createTask,
   recordStudySession,
 } from "@/lib/application/commands";
-import { calculateCourseState } from "@/lib/domain/academic-state-engine";
+import { calculateUnitState } from "@/lib/domain/academic-state-engine";
 import { calculateNextAction } from "@/lib/domain/priority-engine";
-import type { AssessmentType, CourseState, TaskType } from "@/lib/domain/types";
+import type { AssessmentType, UnitState, TaskType } from "@/lib/domain/types";
 import { TimetableImport } from "@/components/timetable-import";
 
 type Period = { id: string; name: string; academic_year_id: string; semester: 1 | 2; starts_on: string; ends_on: string };
-type CourseType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
-type Course = { id: string; code: string; name: string; course_type: CourseType };
+type UnitType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
+type Unit = { id: string; code: string; name: string; unit_type: UnitType };
 type State = {
-  course_id: string;
+  unit_id: string;
   state: string;
   backlog: boolean;
   understanding_level: number | null;
@@ -32,7 +32,7 @@ type State = {
 type Task = {
   id: string;
   title: string;
-  course_id: string | null;
+  unit_id: string | null;
   task_type: string;
   estimated_minutes: number | null;
   due_at: string | null;
@@ -41,11 +41,11 @@ type Task = {
 type Assessment = {
   id: string;
   title: string;
-  course_id: string;
+  unit_id: string;
   assessment_type: string;
   due_at: string | null;
   weight_percent: number | null;
-  courses?: { code: string; name: string };
+  units?: { code: string; name: string };
 };
 
 const client = getSupabaseClient();
@@ -83,19 +83,19 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [period, setPeriod] = useState<Period | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
   const [states, setStates] = useState<State[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
 
   const [title, setTitle] = useState("");
-  const [courseId, setCourseId] = useState("");
+  const [unitId, setUnitId] = useState("");
   const [taskType, setTaskType] = useState<TaskType>("study");
   const [estimatedMinutes, setEstimatedMinutes] = useState("");
   const [dueAt, setDueAt] = useState("");
 
   const [assessmentTitle, setAssessmentTitle] = useState("");
-  const [assessmentCourseId, setAssessmentCourseId] = useState("");
+  const [assessmentUnitId, setAssessmentUnitId] = useState("");
   const [assessmentType, setAssessmentType] = useState<AssessmentType>("cat");
   const [assessmentDueAt, setAssessmentDueAt] = useState("");
   const [assessmentWeight, setAssessmentWeight] = useState("");
@@ -105,18 +105,18 @@ export default function Home() {
   const [semester, setSemester] = useState<1 | 2>(1);
   const [periodStart, setPeriodStart] = useState("2026-09-01");
   const [periodEnd, setPeriodEnd] = useState("2026-12-31");
-  const [courseCode, setCourseCode] = useState("");
-  const [courseName, setCourseName] = useState("");
-  const [courseType, setCourseType] = useState<CourseType>("mixed");
-  const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
-  const [editingCourseCode, setEditingCourseCode] = useState("");
-  const [editingCourseName, setEditingCourseName] = useState("");
-  const [editingCourseType, setEditingCourseType] = useState<CourseType>("mixed");
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [removeConfirmationCourseId, setRemoveConfirmationCourseId] = useState<string | null>(null);
+  const [unitCode, setUnitCode] = useState("");
+  const [unitName, setUnitName] = useState("");
+  const [unitType, setUnitType] = useState<UnitType>("mixed");
+  const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
+  const [editingUnitCode, setEditingUnitCode] = useState("");
+  const [editingUnitName, setEditingUnitName] = useState("");
+  const [editingUnitType, setEditingUnitType] = useState<UnitType>("mixed");
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [removeConfirmationUnitId, setRemoveConfirmationUnitId] = useState<string | null>(null);
   const [removeConfirmationCode, setRemoveConfirmationCode] = useState("");
 
-  const [sessionCourseId, setSessionCourseId] = useState("");
+  const [sessionUnitId, setSessionUnitId] = useState("");
   const [sessionMinutes, setSessionMinutes] = useState("");
   const [sessionOutcome, setSessionOutcome] = useState("");
 
@@ -127,7 +127,7 @@ export default function Home() {
     const current = (await repository.getCurrentAcademicPeriod(id)) as Period | null;
     setPeriod(current);
     if (!current) {
-      setCourses([]);
+      setUnits([]);
       setStates([]);
       setTasks([]);
       setAssessments([]);
@@ -135,13 +135,13 @@ export default function Home() {
     }
 
     const result = await Promise.all([
-      repository.listCourses(id, current.id),
-      repository.listCourseStates(id),
+      repository.listUnits(id, current.id),
+      repository.listUnitStates(id),
       repository.listOpenTasks(id),
       repository.listUpcomingAssessments(id, current.id),
     ]);
 
-    setCourses(result[0] as Course[]);
+    setUnits(result[0] as Unit[]);
     setStates(result[1] as State[]);
     setTasks(result[2] as Task[]);
     setAssessments(result[3] as unknown as Assessment[]);
@@ -163,7 +163,7 @@ export default function Home() {
         void loadAcademicData(id);
       } else {
         setPeriod(null);
-        setCourses([]);
+        setUnits([]);
         setStates([]);
         setTasks([]);
         setAssessments([]);
@@ -211,7 +211,7 @@ export default function Home() {
     }
   }
 
-  async function addCourse(event: FormEvent) {
+  async function addUnit(event: FormEvent) {
     event.preventDefault();
     if (!userId || !period) return;
 
@@ -219,15 +219,15 @@ export default function Home() {
     setMessage("");
 
     try {
-      await createCourse(repository, {
+      await createUnit(repository, {
         userId,
         academicPeriodId: period.id,
-        code: courseCode,
-        name: courseName,
-        courseType,
+        code: unitCode,
+        name: unitName,
+        unitType,
       });
-      setCourseCode("");
-      setCourseName("");
+      setUnitCode("");
+      setUnitName("");
       await loadAcademicData(userId);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not add unit.");
@@ -236,42 +236,42 @@ export default function Home() {
     }
   }
 
-  function startEditingCourse(course: Course) {
-    setEditingCourseId(course.id);
-    setEditingCourseCode(course.code);
-    setEditingCourseName(course.name);
-    setEditingCourseType(course.course_type);
-    setRemoveConfirmationCourseId(null);
+  function startEditingUnit(unit: Unit) {
+    setEditingUnitId(unit.id);
+    setEditingUnitCode(unit.code);
+    setEditingUnitName(unit.name);
+    setEditingUnitType(unit.unit_type);
+    setRemoveConfirmationUnitId(null);
     setRemoveConfirmationCode("");
     setMessage("");
   }
 
-  function cancelEditingCourse() {
-    setEditingCourseId(null);
-    setRemoveConfirmationCourseId(null);
+  function cancelEditingUnit() {
+    setEditingUnitId(null);
+    setRemoveConfirmationUnitId(null);
     setRemoveConfirmationCode("");
-    setEditingCourseCode("");
-    setEditingCourseName("");
-    setEditingCourseType("mixed");
+    setEditingUnitCode("");
+    setEditingUnitName("");
+    setEditingUnitType("mixed");
   }
 
-  async function saveCourseEdit(event: FormEvent) {
+  async function saveUnitEdit(event: FormEvent) {
     event.preventDefault();
-    if (!userId || !period || !editingCourseId) return;
+    if (!userId || !period || !editingUnitId) return;
 
     setBusy(true);
     setMessage("");
 
     try {
-      await updateCourse(repository, {
+      await updateUnit(repository, {
         userId,
         academicPeriodId: period.id,
-        courseId: editingCourseId,
-        code: editingCourseCode,
-        name: editingCourseName,
-        courseType: editingCourseType,
+        unitId: editingUnitId,
+        code: editingUnitCode,
+        name: editingUnitName,
+        unitType: editingUnitType,
       });
-      cancelEditingCourse();
+      cancelEditingUnit();
       setMessage("Unit updated.");
       await loadAcademicData(userId);
     } catch (error) {
@@ -281,20 +281,20 @@ export default function Home() {
     }
   }
 
-  async function removeCourse(id: string) {
+  async function removeUnit(id: string) {
     if (!userId || !period) return;
-    const course = courses.find((item) => item.id === id);
-    if (!course) return;
-    if (removeConfirmationCode.trim().toUpperCase() !== course.code) return;
+    const unit = units.find((item) => item.id === id);
+    if (!unit) return;
+    if (removeConfirmationCode.trim().toUpperCase() !== unit.code) return;
 
     setBusy(true);
     setMessage("");
 
     try {
-      await archiveCourse(repository, { userId, academicPeriodId: period.id, courseId: id });
-      if (editingCourseId === id) cancelEditingCourse();
+      await archiveUnit(repository, { userId, academicPeriodId: period.id, unitId: id });
+      if (editingUnitId === id) cancelEditingUnit();
       else {
-        setRemoveConfirmationCourseId(null);
+        setRemoveConfirmationUnitId(null);
         setRemoveConfirmationCode("");
       }
       setMessage("Unit archived from the active unit list. Existing records were preserved.");
@@ -316,7 +316,7 @@ export default function Home() {
     try {
       await createTask(repository, {
         userId,
-        courseId: courseId || null,
+        unitId: unitId || null,
         title,
         taskType,
         estimatedMinutes: estimatedMinutes ? Number(estimatedMinutes) : null,
@@ -325,7 +325,7 @@ export default function Home() {
       });
 
       setTitle("");
-      setCourseId("");
+      setUnitId("");
       setTaskType("study");
       setEstimatedMinutes("");
       setDueAt("");
@@ -340,7 +340,7 @@ export default function Home() {
 
   async function addAssessment(event: FormEvent) {
     event.preventDefault();
-    if (!userId || !assessmentCourseId || !assessmentTitle.trim()) return;
+    if (!userId || !assessmentUnitId || !assessmentTitle.trim()) return;
 
     setBusy(true);
     setMessage("");
@@ -348,7 +348,7 @@ export default function Home() {
     try {
       await createAssessment(repository, {
         userId,
-        courseId: assessmentCourseId,
+        unitId: assessmentUnitId,
         title: assessmentTitle,
         assessmentType,
         dueAt: assessmentDueAt ? new Date(assessmentDueAt).toISOString() : null,
@@ -357,7 +357,7 @@ export default function Home() {
       });
 
       setAssessmentTitle("");
-      setAssessmentCourseId("");
+      setAssessmentUnitId("");
       setAssessmentType("cat");
       setAssessmentDueAt("");
       setAssessmentWeight("");
@@ -372,7 +372,7 @@ export default function Home() {
 
   async function saveStudySession(event: FormEvent) {
     event.preventDefault();
-    if (!userId || !sessionCourseId || !sessionMinutes) return;
+    if (!userId || !sessionUnitId || !sessionMinutes) return;
 
     setBusy(true);
     setMessage("");
@@ -384,7 +384,7 @@ export default function Home() {
 
       await recordStudySession(repository, {
         userId,
-        courseId: sessionCourseId,
+        unitId: sessionUnitId,
         startedAt: startedAt.toISOString(),
         endedAt: endedAt.toISOString(),
         durationMinutes: minutes,
@@ -392,7 +392,7 @@ export default function Home() {
         source: "user",
       });
 
-      setSessionCourseId("");
+      setSessionUnitId("");
       setSessionMinutes("");
       setSessionOutcome("");
       setMessage("Study evidence recorded. Academic state and next action will recalculate from the new evidence.");
@@ -421,38 +421,38 @@ export default function Home() {
     }
   }
 
-  const courseById = useMemo(
-    () => new Map(courses.map((course) => [course.id, course])),
-    [courses],
+  const unitById = useMemo(
+    () => new Map(units.map((unit) => [unit.id, unit])),
+    [units],
   );
 
-  const stateByCourse = useMemo(
-    () => new Map(states.map((state) => [state.course_id, state])),
+  const stateByUnit = useMemo(
+    () => new Map(states.map((state) => [state.unit_id, state])),
     [states],
   );
 
-  const derivedStateByCourse = useMemo(() => {
+  const derivedStateByUnit = useMemo(() => {
     const result = new Map<string, State>();
 
-    for (const course of courses) {
-      const existing = stateByCourse.get(course.id);
-      const courseTasks = tasks.filter((task) => task.course_id === course.id);
-      const overdueTasks = courseTasks.filter(
+    for (const unit of units) {
+      const existing = stateByUnit.get(unit.id);
+      const unitTasks = tasks.filter((task) => task.unit_id === unit.id);
+      const overdueTasks = unitTasks.filter(
         (task) => task.due_at && Date.parse(task.due_at) <= Date.now(),
       ).length;
 
-      const courseAssessments = assessments.filter(
-        (assessment) => assessment.course_id === course.id,
+      const unitAssessments = assessments.filter(
+        (assessment) => assessment.unit_id === unit.id,
       );
 
-      const dueSoon = courseAssessments.filter(
+      const dueSoon = unitAssessments.filter(
         (assessment) =>
           assessment.due_at &&
           Date.parse(assessment.due_at) - Date.now() <= 86400000,
       ).length;
 
-      const calculated = calculateCourseState({
-        currentState: (existing?.state as CourseState | undefined) ?? null,
+      const calculated = calculateUnitState({
+        currentState: (existing?.state as UnitState | undefined) ?? null,
         backlog: existing?.backlog ?? false,
         overdueTasks,
         missedAssessments: 0,
@@ -460,8 +460,8 @@ export default function Home() {
         lastPracticeAt: existing?.last_practiced_at,
       });
 
-      result.set(course.id, {
-        course_id: course.id,
+      result.set(unit.id, {
+        unit_id: unit.id,
         state: calculated.state,
         backlog: calculated.backlog,
         understanding_level: existing?.understanding_level ?? null,
@@ -470,45 +470,45 @@ export default function Home() {
     }
 
     return result;
-  }, [courses, tasks, assessments, stateByCourse]);
+  }, [units, tasks, assessments, stateByUnit]);
 
   const nextAction = useMemo(() => {
     const candidates = [
       ...tasks.map((task) => {
-        const state = task.course_id
-          ? derivedStateByCourse.get(task.course_id) ?? stateByCourse.get(task.course_id)
+        const state = task.unit_id
+          ? derivedStateByUnit.get(task.unit_id) ?? stateByUnit.get(task.unit_id)
           : undefined;
 
         return {
           id: task.id,
           kind: "task" as const,
           title: task.title,
-          courseId: task.course_id,
+          unitId: task.unit_id,
           dueAt: task.due_at,
           estimatedMinutes: task.estimated_minutes,
-          state: (state?.state as CourseState | undefined) ?? null,
+          state: (state?.state as UnitState | undefined) ?? null,
           backlog: state?.backlog ?? false,
         };
       }),
       ...assessments.map((assessment) => {
         const state =
-          derivedStateByCourse.get(assessment.course_id) ?? stateByCourse.get(assessment.course_id);
+          derivedStateByUnit.get(assessment.unit_id) ?? stateByUnit.get(assessment.unit_id);
 
         return {
           id: assessment.id,
           kind: "assessment" as const,
           title: assessment.title,
-          courseId: assessment.course_id,
+          unitId: assessment.unit_id,
           dueAt: assessment.due_at,
           estimatedMinutes: null,
-          state: (state?.state as CourseState | undefined) ?? null,
+          state: (state?.state as UnitState | undefined) ?? null,
           backlog: state?.backlog ?? false,
         };
       }),
     ];
 
     return calculateNextAction(candidates);
-  }, [tasks, assessments, derivedStateByCourse, stateByCourse]);
+  }, [tasks, assessments, derivedStateByUnit, stateByUnit]);
 
   const overdueTasks = tasks.filter(
     (task) => task.due_at && Date.parse(task.due_at) <= Date.now(),
@@ -522,11 +522,11 @@ export default function Home() {
 
   const stateCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const state of derivedStateByCourse.values()) {
+    for (const state of derivedStateByUnit.values()) {
       counts[state.state] = (counts[state.state] ?? 0) + 1;
     }
     return counts;
-  }, [derivedStateByCourse]);
+  }, [derivedStateByUnit]);
 
   if (!userId) {
     return (
@@ -649,7 +649,7 @@ export default function Home() {
 
         <section className="mt-6 grid gap-3 sm:grid-cols-4">
           {[
-            ["Units", courses.length, "active"],
+            ["Units", units.length, "active"],
             ["Open tasks", tasks.length, overdueTasks ? `${overdueTasks} overdue` : "on track"],
             ["Assessments", assessments.length, urgentAssessments ? `${urgentAssessments} within 7 days` : "none within 7 days"],
             ["States", Object.values(stateCounts).reduce((sum, count) => sum + count, 0), "derived from evidence"],
@@ -721,7 +721,7 @@ export default function Home() {
                   Current academic condition derived from recorded unit evidence.
                 </p>
               </div>
-              <span className="text-sm text-zinc-500">{courses.length} active</span>
+              <span className="text-sm text-zinc-500">{units.length} active</span>
             </div>
 
             <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/30">
@@ -733,36 +733,36 @@ export default function Home() {
                 <span className="sr-only">Actions</span>
               </div>
 
-              {courses.map((course) => {
+              {units.map((unit) => {
                 const state =
-                  derivedStateByCourse.get(course.id) ?? stateByCourse.get(course.id);
-                const isSelected = selectedCourseId === course.id;
+                  derivedStateByUnit.get(unit.id) ?? stateByUnit.get(unit.id);
+                const isSelected = selectedUnitId === unit.id;
 
-                return editingCourseId === course.id ? (
+                return editingUnitId === unit.id ? (
                   <form
-                    key={course.id}
-                    onSubmit={saveCourseEdit}
+                    key={unit.id}
+                    onSubmit={saveUnitEdit}
                     className="border-b border-zinc-800 bg-zinc-900/70 p-4 last:border-b-0 sm:p-5"
                   >
                     <div className="grid gap-3 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_160px]">
                       <input
                         className={inputClass()}
-                        value={editingCourseCode}
-                        onChange={(event) => setEditingCourseCode(event.target.value.toUpperCase())}
+                        value={editingUnitCode}
+                        onChange={(event) => setEditingUnitCode(event.target.value.toUpperCase())}
                         placeholder="Code"
                         required
                       />
                       <input
                         className={inputClass()}
-                        value={editingCourseName}
-                        onChange={(event) => setEditingCourseName(event.target.value)}
+                        value={editingUnitName}
+                        onChange={(event) => setEditingUnitName(event.target.value)}
                         placeholder="Unit name"
                         required
                       />
                       <select
                         className={inputClass()}
-                        value={editingCourseType}
-                        onChange={(event) => setEditingCourseType(event.target.value as CourseType)}
+                        value={editingUnitType}
+                        onChange={(event) => setEditingUnitType(event.target.value as UnitType)}
                       >
                         {["technical", "conceptual", "practical", "mathematical", "online", "mixed"].map(
                           (value) => <option key={value}>{value}</option>,
@@ -779,7 +779,7 @@ export default function Home() {
                       </button>
                       <button
                         type="button"
-                        onClick={cancelEditingCourse}
+                        onClick={cancelEditingUnit}
                         disabled={busy}
                         className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 disabled:opacity-50"
                       >
@@ -788,8 +788,8 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => {
-                          setRemoveConfirmationCourseId(
-                            removeConfirmationCourseId === course.id ? null : course.id,
+                          setRemoveConfirmationUnitId(
+                            removeConfirmationUnitId === unit.id ? null : unit.id,
                           );
                           setRemoveConfirmationCode("");
                         }}
@@ -799,25 +799,25 @@ export default function Home() {
                         Archive unit
                       </button>
                     </div>
-                    {removeConfirmationCourseId === course.id && (
+                    {removeConfirmationUnitId === unit.id && (
                       <div className="mt-4 rounded-xl border border-red-950/70 bg-red-950/10 p-4">
                         <p className="text-sm font-medium text-red-300">Archive this unit?</p>
                         <p className="mt-1 text-xs leading-5 text-zinc-500">
                           Its existing tasks, assessments, evidence, sessions, and state history will be preserved.
-                          Type <span className="font-medium text-zinc-300">{course.code}</span> to confirm.
+                          Type <span className="font-medium text-zinc-300">{unit.code}</span> to confirm.
                         </p>
                         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                           <input
                             className={inputClass()}
                             value={removeConfirmationCode}
                             onChange={(event) => setRemoveConfirmationCode(event.target.value.toUpperCase())}
-                            placeholder={course.code}
-                            aria-label={"Type " + course.code + " to confirm archiving"}
+                            placeholder={unit.code}
+                            aria-label={"Type " + unit.code + " to confirm archiving"}
                           />
                           <button
                             type="button"
-                            onClick={() => void removeCourse(course.id)}
-                            disabled={busy || removeConfirmationCode.trim().toUpperCase() !== course.code}
+                            onClick={() => void removeUnit(unit.id)}
+                            disabled={busy || removeConfirmationCode.trim().toUpperCase() !== unit.code}
                             className="rounded-xl bg-red-950 px-4 py-3 text-sm font-medium text-red-200 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             Confirm archive
@@ -827,24 +827,24 @@ export default function Home() {
                     )}
                   </form>
                 ) : (
-                  <div key={course.id} className="border-b border-zinc-800 last:border-b-0">
+                  <div key={unit.id} className="border-b border-zinc-800 last:border-b-0">
                     <div className="grid gap-2 px-4 py-3.5 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-4">
                       <button
                         type="button"
-                        onClick={() => setSelectedCourseId(isSelected ? null : course.id)}
+                        onClick={() => setSelectedUnitId(isSelected ? null : unit.id)}
                         className="col-span-full grid w-full grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] items-center gap-4 text-left focus:outline-none focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-zinc-500 sm:col-span-4"
                         aria-expanded={isSelected}
-                        aria-label={isSelected ? `Hide details for ${course.code}` : `Show details for ${course.code}`}
+                        aria-label={isSelected ? `Hide details for ${unit.code}` : `Show details for ${unit.code}`}
                       >
                         <p className="text-xs font-medium tracking-wide text-zinc-500 sm:text-sm">
-                          {course.code}
+                          {unit.code}
                         </p>
                         <div className="min-w-0">
-                          <h3 className="truncate font-medium text-zinc-200" title={course.name}>
-                            {course.name}
+                          <h3 className="truncate font-medium text-zinc-200" title={unit.name}>
+                            {unit.name}
                           </h3>
                           <p className="mt-1 text-xs text-zinc-600 sm:hidden">
-                            {course.course_type}
+                            {unit.unit_type}
                             {state?.backlog ? " · backlog recorded" : ""}
                           </p>
                         </div>
@@ -866,7 +866,7 @@ export default function Home() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => startEditingCourse(course)}
+                        onClick={() => startEditingUnit(unit)}
                         disabled={busy}
                         className="justify-self-start rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 sm:justify-self-auto"
                       >
@@ -888,7 +888,7 @@ export default function Home() {
                           <div className="grid grid-cols-2 gap-3 text-sm sm:min-w-[220px]">
                             <div>
                               <p className="text-xs text-zinc-600">Unit type</p>
-                              <p className="mt-1 text-zinc-300">{course.course_type}</p>
+                              <p className="mt-1 text-zinc-300">{unit.unit_type}</p>
                             </div>
                             <div>
                               <p className="text-xs text-zinc-600">Backlog</p>
@@ -922,7 +922,7 @@ export default function Home() {
                 )
               })}
 
-              {courses.length === 0 && (
+              {units.length === 0 && (
                 <p className="p-6 text-sm text-zinc-500">
                   No units yet. Add your first unit below.
                 </p>
@@ -935,27 +935,27 @@ export default function Home() {
             onImported={() => loadAcademicData(userId)}
           />
 
-          <form onSubmit={addCourse} className={`${sectionClass()} mt-4`}>
+          <form onSubmit={addUnit} className={`${sectionClass()} mt-4`}>
               <h3 className="font-medium">Add unit</h3>
               <div className="mt-3 grid gap-3 md:grid-cols-[110px_1fr_150px_auto]">
                 <input
                   className={inputClass()}
                   placeholder="Code"
-                  value={courseCode}
-                  onChange={(event) => setCourseCode(event.target.value)}
+                  value={unitCode}
+                  onChange={(event) => setUnitCode(event.target.value)}
                   required
                 />
                 <input
                   className={inputClass()}
                   placeholder="Unit name"
-                  value={courseName}
-                  onChange={(event) => setCourseName(event.target.value)}
+                  value={unitName}
+                  onChange={(event) => setUnitName(event.target.value)}
                   required
                 />
                 <select
                   className={inputClass()}
-                  value={courseType}
-                  onChange={(event) => setCourseType(event.target.value as CourseType)}
+                  value={unitType}
+                  onChange={(event) => setUnitType(event.target.value as UnitType)}
                 >
                   {["technical", "conceptual", "practical", "mathematical", "online", "mixed"].map(
                     (value) => (
@@ -991,7 +991,7 @@ export default function Home() {
                   >
                     <p className="text-sm font-medium">{assessment.title}</p>
                     <p className="mt-1 text-xs text-zinc-500">
-                      {assessment.courses?.code ?? "Unit"} · {assessment.assessment_type}
+                      {assessment.units?.code ?? "Unit"} · {assessment.assessment_type}
                     </p>
                     <p className="mt-1 text-xs text-zinc-600">
                       {dueLabel(assessment.due_at)}
@@ -1018,14 +1018,14 @@ export default function Home() {
                 />
                 <select
                   className={inputClass()}
-                  value={assessmentCourseId}
-                  onChange={(event) => setAssessmentCourseId(event.target.value)}
+                  value={assessmentUnitId}
+                  onChange={(event) => setAssessmentUnitId(event.target.value)}
                   required
                 >
                   <option value="">Choose unit</option>
-                  {courses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.code} · {course.name}
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.code} · {unit.name}
                     </option>
                   ))}
                 </select>
@@ -1061,7 +1061,7 @@ export default function Home() {
                   onChange={(event) => setAssessmentDueAt(event.target.value)}
                 />
                 <button
-                  disabled={busy || courses.length === 0}
+                  disabled={busy || units.length === 0}
                   className="w-full rounded-xl border border-zinc-700 px-4 py-3 text-sm font-medium hover:bg-zinc-800 disabled:opacity-50"
                 >
                   Add assessment
@@ -1090,13 +1090,13 @@ export default function Home() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <select
                   className={inputClass()}
-                  value={courseId}
-                  onChange={(event) => setCourseId(event.target.value)}
+                  value={unitId}
+                  onChange={(event) => setUnitId(event.target.value)}
                 >
                   <option value="">No unit</option>
-                  {courses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.code} · {course.name}
+                  {units.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.code} · {unit.name}
                     </option>
                   ))}
                 </select>
@@ -1149,14 +1149,14 @@ export default function Home() {
             <form onSubmit={saveStudySession} className="mt-4 space-y-3">
               <select
                 className={inputClass()}
-                value={sessionCourseId}
-                onChange={(event) => setSessionCourseId(event.target.value)}
+                value={sessionUnitId}
+                onChange={(event) => setSessionUnitId(event.target.value)}
                 required
               >
                 <option value="">Choose unit</option>
-                {courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.code} · {course.name}
+                {units.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {unit.code} · {unit.name}
                   </option>
                 ))}
               </select>
@@ -1225,7 +1225,7 @@ export default function Home() {
                   </div>
 
                   <p className="mt-1 text-sm text-zinc-500">
-                    {task.course_id ? courseById.get(task.course_id)?.code ?? "Unit" : "General"} ·{" "}
+                    {task.unit_id ? unitById.get(task.unit_id)?.code ?? "Unit" : "General"} ·{" "}
                     {task.task_type}
                     {task.estimated_minutes ? ` · ${task.estimated_minutes} min` : ""}
                   </p>
