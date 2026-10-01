@@ -3,7 +3,8 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { SupabaseAcademicRepository } from "@/lib/infrastructure/supabase-repository";
-import { createAcademicPeriod, createCourse, createTask, completeTask } from "@/lib/application/commands";
+import { createAcademicPeriod, createCourse, createTask, completeTask, recordStudySession } from "@/lib/application/commands";
+import { calculateCourseState } from "@/lib/domain/academic-state-engine";
 import { calculateNextAction } from "@/lib/domain/priority-engine";
 import type { CourseState } from "@/lib/domain/types";
 
@@ -46,6 +47,9 @@ export default function Home() {
   const [courseType, setCourseType] = useState<CourseType>("mixed");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [sessionCourseId, setSessionCourseId] = useState("");
+  const [sessionMinutes, setSessionMinutes] = useState("");
+  const [sessionOutcome, setSessionOutcome] = useState("");
 
   async function loadAcademicData(id: string) {
     const current = await repository.getCurrentAcademicPeriod(id) as Period | null;
@@ -129,6 +133,31 @@ export default function Home() {
     finally { setBusy(false); }
   }
 
+  async function saveStudySession(event: FormEvent) {
+    event.preventDefault();
+    if (!userId || !sessionCourseId || !sessionMinutes) return;
+    setBusy(true); setMessage("");
+    try {
+      const minutes = Number(sessionMinutes);
+      const endedAt = new Date();
+      const startedAt = new Date(endedAt.getTime() - minutes * 60000);
+      await recordStudySession(repository, {
+        userId,
+        courseId: sessionCourseId,
+        startedAt: startedAt.toISOString(),
+        endedAt: endedAt.toISOString(),
+        durationMinutes: minutes,
+        outcome: sessionOutcome || null,
+        source: "user",
+      });
+      setSessionCourseId(""); setSessionMinutes(""); setSessionOutcome("");
+      setMessage("Study evidence recorded. The next-action calculation has been refreshed.");
+      await loadAcademicData(userId);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not record study session.");
+    } finally { setBusy(false); }
+  }
+
   async function finishTask(id: string) {
     if (!userId) return;
     setBusy(true); setMessage("");
@@ -139,6 +168,33 @@ export default function Home() {
 
   const courseById = useMemo(() => new Map(courses.map((course) => [course.id, course])), [courses]);
   const stateByCourse = useMemo(() => new Map(states.map((state) => [state.course_id, state])), [states]);
+
+  const derivedStateByCourse = useMemo(() => {
+    const result = new Map<string, State>();
+    for (const course of courses) {
+      const existing = stateByCourse.get(course.id);
+      const courseTasks = tasks.filter((task) => task.course_id === course.id);
+      const overdueTasks = courseTasks.filter((task) => task.due_at && Date.parse(task.due_at) <= Date.now()).length;
+      const courseAssessments = assessments.filter((assessment) => assessment.course_id === course.id);
+      const dueSoon = courseAssessments.filter((assessment) => assessment.due_at && (Date.parse(assessment.due_at) - Date.now()) <= 86400000).length;
+      const calculated = calculateCourseState({
+        currentState: (existing?.state as CourseState | undefined) ?? null,
+        backlog: existing?.backlog ?? false,
+        overdueTasks,
+        missedAssessments: 0,
+        assessmentsDueWithinDays: dueSoon,
+        lastPracticeAt: existing?.last_practiced_at,
+      });
+      result.set(course.id, {
+        course_id: course.id,
+        state: calculated.state,
+        backlog: calculated.backlog,
+        understanding_level: existing?.understanding_level ?? null,
+        state_reason: calculated.reason,
+      });
+    }
+    return result;
+  }, [courses, tasks, assessments, stateByCourse]);
 
   const nextAction = useMemo(() => {
     const candidates = [
@@ -156,7 +212,7 @@ export default function Home() {
         };
       }),
       ...assessments.map((assessment) => {
-        const state = stateByCourse.get(assessment.course_id);
+        const state = derivedStateByCourse.get(assessment.course_id) ?? stateByCourse.get(assessment.course_id);
         return {
           id: assessment.id,
           kind: "assessment" as const,
@@ -170,7 +226,7 @@ export default function Home() {
       }),
     ];
     return calculateNextAction(candidates);
-  }, [tasks, assessments, stateByCourse]);
+  }, [tasks, assessments, derivedStateByCourse, stateByCourse]);
 
   if (!userId) return (
     <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100"><div className="mx-auto max-w-md">
@@ -208,12 +264,14 @@ export default function Home() {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.3fr_.7fr]"><section>
         <div className="flex items-center justify-between"><h2 className="text-lg font-medium">Courses</h2><span className="text-sm text-zinc-500">{courses.length} active</span></div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">{courses.map((course) => { const state = stateByCourse.get(course.id); return <article key={course.id} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5"><div className="flex items-start justify-between gap-4"><div><p className="text-xs text-zinc-500">{course.code}</p><h3 className="mt-1 font-medium">{course.name}</h3></div>{state && <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300">{stateLabel(state.state)}</span>}</div><p className="mt-3 text-sm text-zinc-500">{course.course_type}{state?.backlog ? " · backlog recorded" : ""}</p>{state?.state_reason && <p className="mt-2 text-xs text-zinc-600">{state.state_reason}</p>}</article>; })}{courses.length === 0 && <p className="rounded-2xl border border-dashed border-zinc-800 p-6 text-sm text-zinc-500">No courses yet. Add your first course below.</p>}</div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">{courses.map((course) => { const state = derivedStateByCourse.get(course.id) ?? stateByCourse.get(course.id); return <article key={course.id} className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5"><div className="flex items-start justify-between gap-4"><div><p className="text-xs text-zinc-500">{course.code}</p><h3 className="mt-1 font-medium">{course.name}</h3></div>{state && <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300">{stateLabel(state.state)}</span>}</div><p className="mt-3 text-sm text-zinc-500">{course.course_type}{state?.backlog ? " · backlog recorded" : ""}</p>{state?.state_reason && <p className="mt-2 text-xs text-zinc-600">{state.state_reason}</p>}</article>; })}{courses.length === 0 && <p className="rounded-2xl border border-dashed border-zinc-800 p-6 text-sm text-zinc-500">No courses yet. Add your first course below.</p>}</div>
 
         <form onSubmit={addCourse} className="mt-5 rounded-2xl border border-zinc-800 p-5"><h3 className="font-medium">Add course</h3><div className="mt-3 grid gap-3 md:grid-cols-[120px_1fr_150px_auto]"><input className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" placeholder="Code" value={courseCode} onChange={(e) => setCourseCode(e.target.value)} required /><input className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" placeholder="Course name" value={courseName} onChange={(e) => setCourseName(e.target.value)} required /><select className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" value={courseType} onChange={(e) => setCourseType(e.target.value as CourseType)}>{["technical","conceptual","practical","mathematical","online","mixed"].map((x) => <option key={x}>{x}</option>)}</select><button disabled={busy} className="rounded-xl bg-white px-4 py-3 font-medium text-zinc-950 disabled:opacity-50">Add</button></div></form>
       </section>
 
       <aside><section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5"><div className="flex items-center justify-between"><h2 className="font-medium">Upcoming assessments</h2><span className="text-xs text-zinc-500">{assessments.length}</span></div><div className="mt-4 space-y-3">{assessments.slice(0,5).map((a) => <div key={a.id} className="border-b border-zinc-800 pb-3 last:border-0"><p className="text-sm font-medium">{a.title}</p><p className="mt-1 text-xs text-zinc-500">{a.courses?.code ?? "Course"} · {a.due_at ? new Date(a.due_at).toLocaleString() : "No due date"}{a.weight_percent != null ? " · " + a.weight_percent + "%" : ""}</p></div>)}{assessments.length === 0 && <p className="text-sm text-zinc-500">No upcoming assessments recorded.</p>}</div></section>
+
+      <section className="mt-5 rounded-2xl border border-zinc-800 p-5"><h2 className="font-medium">Record study evidence</h2><form onSubmit={saveStudySession} className="mt-4 space-y-3"><select className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" value={sessionCourseId} onChange={(e) => setSessionCourseId(e.target.value)} required><option value="">Choose course</option>{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}</select><div className="grid grid-cols-2 gap-3"><input className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" type="number" min="1" placeholder="Minutes" value={sessionMinutes} onChange={(e) => setSessionMinutes(e.target.value)} required /><input className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" placeholder="Outcome (optional)" value={sessionOutcome} onChange={(e) => setSessionOutcome(e.target.value)} /></div><button disabled={busy} className="w-full rounded-xl border border-zinc-700 px-4 py-3 font-medium hover:bg-zinc-800 disabled:opacity-50">Record study evidence</button></form></section>
 
       <section className="mt-5 rounded-2xl border border-zinc-800 p-5"><h2 className="font-medium">Record work</h2><form onSubmit={addTask} className="mt-4 space-y-3"><input className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" placeholder="What needs doing?" value={title} onChange={(e) => setTitle(e.target.value)} required /><select className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" value={courseId} onChange={(e) => setCourseId(e.target.value)}><option value="">No course</option>{courses.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}</select><div className="grid grid-cols-2 gap-3"><input className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" type="number" min="1" placeholder="Minutes" value={estimatedMinutes} onChange={(e) => setEstimatedMinutes(e.target.value)} /><input className="rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3" type="datetime-local" value={dueAt} onChange={(e) => setDueAt(e.target.value)} /></div><button disabled={busy} className="w-full rounded-xl bg-white px-4 py-3 font-medium text-zinc-950 disabled:opacity-50">Add task</button></form></section></aside></div>
 
