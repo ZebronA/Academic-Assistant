@@ -82,7 +82,7 @@ When a student says something like:
 the assistant should conceptually perform:
 
 ~~~text
-1. Identify possible course
+1. Identify possible unit
 2. Identify possible task/assessment
 3. Interpret the deadline
 4. Check current records
@@ -115,8 +115,8 @@ may refer to multiple tasks.
 
 The assistant should use:
 
-- exact course code
-- course name
+- exact unit code
+- unit name
 - current academic period
 - task title
 - assessment title
@@ -146,7 +146,7 @@ Confirmation should normally be required when the interpretation could:
 - create or change a deadline
 - mark an assessment completed
 - mark a requirement missed
-- change course state materially
+- change unit state materially
 - create a significant obligation
 - cancel or reschedule academic commitments
 - overwrite existing academic information
@@ -301,7 +301,7 @@ The assistant must never invent:
 - marks
 - lecturer instructions
 - university requirements
-- course content
+- unit content
 - attendance facts
 - quiz consequences
 - submission status
@@ -519,7 +519,7 @@ Example:
 
 > "When is the assignment due?"
 
-rather than asking for the entire course history.
+rather than asking for the entire unit history.
 
 The assistant should avoid unnecessary interrogation.
 
@@ -569,7 +569,7 @@ contains useful evidence.
 The assistant should preserve the meaningful parts:
 
 ~~~text
-course = Programming
+unit = Programming
 duration ≈ 60 minutes
 attempts = 3
 independent = 2
@@ -627,7 +627,7 @@ The assistant must not:
 - silently change assessment dates
 - silently delete history
 - declare mastery without evidence
-- invent course state
+- invent unit state
 - invent priority reasons
 - pretend a proposed fact is confirmed
 - conceal uncertainty that materially affects a decision
@@ -656,7 +656,7 @@ User:
 Assistant workflow:
 
 ~~~text
-1. Resolve Economics course
+1. Resolve Economics unit
 2. Resolve assignment
 3. Mark task completed if unambiguous
 4. Record study-session evidence if appropriate
