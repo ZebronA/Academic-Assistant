@@ -1,4 +1,4 @@
-import type { CourseState } from "@/lib/domain/types";
+import type { UnitState } from "@/lib/domain/types";
 
 export type ActionKind = "task" | "assessment";
 
@@ -6,17 +6,17 @@ export interface PriorityCandidate {
   id: string;
   kind: ActionKind;
   title: string;
-  courseId: string | null;
+  unitId: string | null;
   dueAt: string | null;
   estimatedMinutes: number | null;
-  state: CourseState | null;
+  state: UnitState | null;
   backlog: boolean;
 }
 
 export interface NextAction {
   candidateId: string;
   actionType: ActionKind;
-  courseId: string | null;
+  unitId: string | null;
   title: string;
   reason: string;
   factors: string[];
@@ -53,7 +53,7 @@ export function calculateNextAction(
     const fitValue = candidate.estimatedMinutes != null && candidate.estimatedMinutes <= 60 ? 5 : 0;
     const factors = [
       deadline.label,
-      ...(candidate.state ? [`course state is ${candidate.state}`] : []),
+      ...(candidate.state ? [`unit state is ${candidate.state}`] : []),
       ...(candidate.backlog ? ["unresolved backlog is recorded"] : []),
       ...(fitValue ? ["estimated duration fits a typical short work block"] : []),
     ];
@@ -66,7 +66,7 @@ export function calculateNextAction(
   return {
     candidateId: selected.candidate.id,
     actionType: selected.candidate.kind,
-    courseId: selected.candidate.courseId,
+    unitId: selected.candidate.unitId,
     title: selected.candidate.title,
     reason: `Selected because ${selected.factors.slice(0, 2).join(" and ")}.`,
     factors: selected.factors,
