@@ -2,7 +2,7 @@ import { DomainValidationError } from "@/lib/application/errors";
 import type { AcademicRepository } from "@/lib/application/ports";
 import type {
   CompleteAssessmentInput, CompleteTaskInput, CreateAcademicPeriodInput, CreateAssessmentInput,
-  CreateCourseInput, UpdateCourseInput, CreateObservationInput, CreateRecurringRequirementInput, CreateTaskInput,
+  CreateUnitInput, UpdateUnitInput, CreateObservationInput, CreateRecurringRequirementInput, CreateTaskInput,
   RecordAcademicEventInput, RecordStudySessionInput,
 } from "@/lib/domain/types";
 
@@ -29,27 +29,27 @@ export async function createAcademicPeriod(repo: AcademicRepository, input: Crea
   return repo.createAcademicPeriod(input);
 }
 
-export async function createCourse(repo: AcademicRepository, input: CreateCourseInput) {
+export async function createUnit(repo: AcademicRepository, input: CreateUnitInput) {
   requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId");
   requireText(input.code, "code"); requireText(input.name, "name");
-  return repo.createCourse({ ...input, code: normalizeCourseCode(input.code) });
+  return repo.createUnit({ ...input, code: normalizeCourseCode(input.code) });
 }
 
-export async function updateCourse(
+export async function updateUnit(
   repo: AcademicRepository,
-  input: UpdateCourseInput,
+  input: UpdateUnitInput,
 ) {
-  requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId"); requireText(input.courseId, "courseId");
+  requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId"); requireText(input.unitId, "unitId");
   requireText(input.code, "code"); requireText(input.name, "name");
-  return repo.updateCourse({ ...input, code: normalizeCourseCode(input.code) });
+  return repo.updateUnit({ ...input, code: normalizeCourseCode(input.code) });
 }
 
-export async function archiveCourse(
+export async function archiveUnit(
   repo: AcademicRepository,
-  input: { userId: string; academicPeriodId: string; courseId: string },
+  input: { userId: string; academicPeriodId: string; unitId: string },
 ) {
-  requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId"); requireText(input.courseId, "courseId");
-  return repo.archiveCourse(input.userId, input.academicPeriodId, input.courseId);
+  requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId"); requireText(input.unitId, "unitId");
+  return repo.archiveUnit(input.userId, input.academicPeriodId, input.unitId);
 }
 
 export async function createTask(repo: AcademicRepository, input: CreateTaskInput) {
@@ -65,7 +65,7 @@ export async function completeTask(repo: AcademicRepository, input: CompleteTask
   return repo.completeTask(input.userId, input.taskId, completedAt);
 }
 export async function createAssessment(repo: AcademicRepository, input: CreateAssessmentInput) {
-  requireText(input.userId, "userId"); requireText(input.courseId, "courseId"); requireText(input.title, "title");
+  requireText(input.userId, "userId"); requireText(input.unitId, "unitId"); requireText(input.title, "title");
   if (input.startsAt) requireIsoDate(input.startsAt, "startsAt");
   if (input.dueAt) requireIsoDate(input.dueAt, "dueAt");
   if (input.weightPercent != null && (!Number.isFinite(input.weightPercent) || input.weightPercent < 0 || input.weightPercent > 100))
@@ -98,7 +98,7 @@ export async function recordAcademicEvent(repo: AcademicRepository, input: Recor
   return repo.recordAcademicEvent(input);
 }
 export async function createRecurringRequirement(repo: AcademicRepository, input: CreateRecurringRequirementInput) {
-  requireText(input.userId, "userId"); requireText(input.courseId, "courseId"); requireText(input.title, "title");
+  requireText(input.userId, "userId"); requireText(input.unitId, "unitId"); requireText(input.title, "title");
   requireIsoDate(input.startsOn, "startsOn");
   if (input.endsOn) requireIsoDate(input.endsOn, "endsOn");
   if (input.endsOn && Date.parse(input.endsOn) < Date.parse(input.startsOn))
