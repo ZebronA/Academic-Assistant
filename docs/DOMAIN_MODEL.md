@@ -61,10 +61,10 @@ User
       │
       └── Academic Period
            │
-           └── Course
+           └── Unit
                 │
-                ├── Course State
-                ├── Course State History
+                ├── Unit State
+                ├── Unit State History
                 ├── Tasks
                 ├── Assessments
                 ├── Recurring Requirements
@@ -75,13 +75,13 @@ User
 
 Tasks ────────────────┐
 Assessments ──────────┤
-Courses ──────────────┤
+Units ──────────────┤
                        ├── Academic Events / Observations
 Study Sessions ───────┤
 Recurring Requirements┘
 ```
 
-Not every relationship is mandatory. A task, event, observation, or study session may be associated with a course, while some records can exist without one when the domain permits it.
+Not every relationship is mandatory. A task, event, observation, or study session may be associated with a unit, while some records can exist without one when the domain permits it.
 
 ---
 
@@ -114,7 +114,7 @@ The current default is `Africa/Nairobi`, but the model should remain timezone-aw
 
 ## 5. Academic Period
 
-An academic period groups courses and academic records into a bounded academic context.
+An academic period groups units and academic records into a bounded academic context.
 
 Examples:
 
@@ -131,7 +131,7 @@ Current attributes:
 - end date
 - current/not-current status
 
-A course belongs to an academic period.
+A unit belongs to an academic period.
 
 The application should use the academic period as data, not hard-code a particular semester.
 
@@ -143,9 +143,9 @@ The current schema has an `is_current` field, but enforcing the one-current-peri
 
 ---
 
-## 6. Course
+## 6. Unit
 
-A course is an academic unit being studied during an academic period.
+A unit is an academic unit being studied during an academic period.
 
 Current attributes:
 
@@ -153,10 +153,10 @@ Current attributes:
 - academic period
 - code
 - name
-- course type
+- unit type
 - active status
 
-Current course types:
+Current unit types:
 
 - technical
 - conceptual
@@ -165,23 +165,23 @@ Current course types:
 - online
 - mixed
 
-Course type is a broad classification. It should not become a container for every learning characteristic.
+Unit type is a broad classification. It should not become a container for every learning characteristic.
 
 More detailed learning/assessment characteristics can be added as the domain requires them.
 
 ### Invariants
 
-A course belongs to exactly one academic period.
+A unit belongs to exactly one academic period.
 
-A course belongs to exactly one user.
+A unit belongs to exactly one user.
 
-Course codes are unique within a user's academic period.
+Unit codes are unique within a user's academic period.
 
 ---
 
-## 7. Course State
+## 7. Unit State
 
-Course state is the current projection of the student's academic condition for a course.
+Unit state is the current projection of the student's academic condition for a unit.
 
 Current states:
 
@@ -199,9 +199,9 @@ Protection is about **preservation**, not simply urgency or weakness.
 
 For example, an online recurring requirement may need protection, but being online does not itself make something protected. Likewise, a deadline or assessment can create a reason to protect something without making `protected` synonymous with deadline or assessment status.
 
-A protected course can therefore be academically healthy. The state indicates that something important should continue to receive deliberate protection while other work competes for attention.
+A protected unit can therefore be academically healthy. The state indicates that something important should continue to receive deliberate protection while other work competes for attention.
 
-For the MVP, `protected` remains a single course-state value. Its concrete transition rules will be implemented conservatively and explicitly rather than inferred by the assistant.
+For the MVP, `protected` remains a single unit-state value. Its concrete transition rules will be implemented conservatively and explicitly rather than inferred by the assistant.
 
 Supporting attributes currently include:
 
@@ -214,7 +214,7 @@ Supporting attributes currently include:
 
 ### Important distinction
 
-Course state is **derived/current state**, not the complete historical record.
+Unit state is **derived/current state**, not the complete historical record.
 
 The system should increasingly calculate it from evidence such as:
 
@@ -232,13 +232,13 @@ Manual state changes may exist, but the long-term design should avoid arbitrary 
 
 ---
 
-## 8. Course State History
+## 8. Unit State History
 
-Course state history records previous state projections.
+Unit state history records previous state projections.
 
 Each history record may include:
 
-- course
+- unit
 - state
 - understanding level
 - backlog
@@ -253,10 +253,10 @@ A new state should not erase the previous state.
 
 This allows the system to answer questions such as:
 
-- When did the course become weak?
+- When did the unit become weak?
 - What evidence caused the change?
 - What happened after additional practice?
-- How has the course state changed over time?
+- How has the unit state changed over time?
 
 ---
 
@@ -267,7 +267,7 @@ A timetable entry represents a planned recurring or scheduled academic commitmen
 Current attributes include:
 
 - user
-- course, when applicable
+- unit, when applicable
 - day of week
 - start time
 - end time
@@ -319,7 +319,7 @@ Current event types are:
 
 An event can reference:
 
-- course
+- unit
 - task
 - assessment
 
@@ -366,7 +366,7 @@ A task is a concrete actionable obligation or activity.
 Current attributes include:
 
 - user
-- optional course
+- optional unit
 - title
 - description
 - task type
@@ -423,7 +423,7 @@ Current statuses:
 
 Current attributes include:
 
-- course
+- unit
 - title
 - assessment type
 - status
@@ -450,7 +450,7 @@ Examples:
 
 Current attributes include:
 
-- course
+- unit
 - title
 - description
 - frequency
@@ -494,7 +494,7 @@ A study session records an actual period of academic work.
 
 Current attributes include:
 
-- course
+- unit
 - optional task
 - start time
 - end time
@@ -523,7 +523,7 @@ difficulty
 outcome
 ```
 
-A study session can therefore contribute evidence to course state.
+A study session can therefore contribute evidence to unit state.
 
 ---
 
@@ -533,7 +533,7 @@ An observation is a recorded statement about the academic situation.
 
 Current attributes include:
 
-- course
+- unit
 - task
 - assessment
 - content
@@ -704,7 +704,7 @@ The system must distinguish between:
 
 Examples:
 
-- current course state
+- current unit state
 - current backlog
 - task status
 - assessment status
@@ -735,7 +735,7 @@ Conceptually:
 Tasks
 Assessments
 Recurring Requirements
-Course State
+Unit State
 Events
 Observations
 Study Evidence
@@ -749,7 +749,7 @@ Next Action
 
 The same task can have different priority at different times.
 
-Therefore, priority should not be treated as a permanent property of a course or task.
+Therefore, priority should not be treated as a permanent property of a unit or task.
 
 ---
 
@@ -779,11 +779,11 @@ It creates an opportunity for the priority engine to select an action.
 The following invariants are foundational:
 
 1. User-owned records belong to one authenticated user.
-2. A course belongs to one academic period.
-3. A task may optionally belong to a course.
-4. An assessment belongs to a course.
-5. A recurring requirement belongs to a course.
-6. A course has one current state projection.
+2. A unit belongs to one academic period.
+3. A task may optionally belong to a unit.
+4. An assessment belongs to a unit.
+5. A recurring requirement belongs to a unit.
+6. A unit has one current state projection.
 7. State history preserves previous projections.
 8. Timetable entries describe plans, not proof of occurrence.
 9. Events describe actual occurrences.
@@ -804,7 +804,7 @@ The current Supabase schema implements most of this model through:
 
 - profiles
 - academic_periods
-- courses
+- units
 - course_states
 - tasks
 - assessments
@@ -824,7 +824,7 @@ The next reconciliation pass should explicitly review:
 3. recurring requirement occurrence generation
 4. event vocabulary
 5. evidence representation
-6. course-state derivation
+6. unit-state derivation
 7. availability representation
 8. source/provenance consistency
 9. missing constraints and lifecycle rules
