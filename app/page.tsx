@@ -790,43 +790,53 @@ export default function Home() {
                   </form>
                 ) : (
                   <div key={course.id} className="border-b border-zinc-800 last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCourseId(isSelected ? null : course.id)}
-                      className="grid w-full gap-2 px-4 py-3.5 text-left transition hover:bg-zinc-900/60 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-zinc-600 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] sm:items-center sm:gap-4"
-                      aria-expanded={isSelected}
-                    >
-                      <p className="text-xs font-medium tracking-wide text-zinc-500 sm:text-sm">
-                        {course.code}
-                      </p>
-                      <div className="min-w-0">
-                        <h3 className="truncate font-medium text-zinc-200" title={course.name}>
-                          {course.name}
-                        </h3>
-                        <p className="mt-1 text-xs text-zinc-600 sm:hidden">
-                          {course.course_type}
-                          {state?.backlog ? " · backlog recorded" : ""}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {state && (
-                          <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300">
-                            {stateLabel(state.state)}
-                          </span>
-                        )}
-                        {state?.backlog && (
-                          <span className="hidden rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-400 sm:inline-flex">
-                            Backlog
-                          </span>
-                        )}
-                      </div>
-                      <span
-                        className="justify-self-start text-xs text-zinc-600 sm:justify-self-auto"
-                        aria-hidden="true"
+                    <div className="grid gap-2 px-4 py-3.5 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] sm:items-center sm:gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCourseId(isSelected ? null : course.id)}
+                        className="contents text-left focus:outline-none"
+                        aria-expanded={isSelected}
                       >
-                        {isSelected ? "Hide details" : "Details"}
-                      </span>
-                    </button>
+                        <p className="text-xs font-medium tracking-wide text-zinc-500 sm:text-sm">
+                          {course.code}
+                        </p>
+                        <div className="min-w-0">
+                          <h3 className="truncate font-medium text-zinc-200" title={course.name}>
+                            {course.name}
+                          </h3>
+                          <p className="mt-1 text-xs text-zinc-600 sm:hidden">
+                            {course.course_type}
+                            {state?.backlog ? " · backlog recorded" : ""}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {state && (
+                            <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300">
+                              {stateLabel(state.state)}
+                            </span>
+                          )}
+                          {state?.backlog && (
+                            <span className="hidden rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-400 sm:inline-flex">
+                              Backlog
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          className="justify-self-start text-xs text-zinc-600 sm:justify-self-auto"
+                          aria-hidden="true"
+                        >
+                          {isSelected ? "Hide details" : "Details"}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startEditingCourse(course)}
+                        disabled={busy}
+                        className="justify-self-start rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 sm:justify-self-auto"
+                      >
+                        Edit
+                      </button>
+                    </div>
 
                     {isSelected && state && (
                       <div className="border-t border-zinc-800 bg-zinc-950/40 px-4 py-4 sm:px-5">
