@@ -11,7 +11,7 @@ import type { CourseState } from "@/lib/domain/types";
 type Period = { id: string; name: string; starts_on: string; ends_on: string };
 type CourseType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
 type Course = { id: string; code: string; name: string; course_type: CourseType };
-type State = { course_id: string; state: string; backlog: boolean; understanding_level: number | null; state_reason: string | null };
+type State = { course_id: string; state: string; backlog: boolean; understanding_level: number | null; state_reason: string | null; last_practiced_at?: string | null };
 type Task = { id: string; title: string; course_id: string | null; task_type: string; estimated_minutes: number | null; due_at: string | null; status: string };
 type Assessment = { id: string; title: string; course_id: string; assessment_type: string; due_at: string | null; weight_percent: number | null; courses?: { code: string; name: string } };
 
