@@ -18,7 +18,8 @@ function requireIsoDate(value: string, field: string) {
 }
 
 export async function createAcademicPeriod(repo: AcademicRepository, input: CreateAcademicPeriodInput) {
-  requireText(input.userId, "userId"); requireText(input.name, "name");
+  requireText(input.userId, "userId"); requireText(input.name, "name"); requireText(input.academicYear, "academicYear");
+  if (input.semester !== 1 && input.semester !== 2) throw new DomainValidationError("semester must be 1 or 2");
   requireIsoDate(input.startsOn, "startsOn"); requireIsoDate(input.endsOn, "endsOn");
   if (Date.parse(input.endsOn) < Date.parse(input.startsOn)) throw new DomainValidationError("endsOn cannot be before startsOn");
   return repo.createAcademicPeriod(input);
