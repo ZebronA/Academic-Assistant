@@ -14,15 +14,17 @@ All listed tables currently have RLS enabled.
 
 ## Findings
 
-### 1. Protected semantics remain intentionally open
+### 1. Protected semantics are established for the MVP
 
-The current course state values are protected, stable, cooling, weak, and critical. `protected` is intentionally retained for now because it is already part of the live course-state schema.
+The current course state values are protected, stable, cooling, weak, and critical.
 
-The reviewed product discussion does not define `protected` or establish its transition rules. The earlier reconciliation therefore went beyond the available design evidence when it treated `protected` as an academic gate and proposed removing it.
+For the MVP, `protected` means:
 
-Current decision: retain `protected` while explicitly marking its semantics as unresolved. Do not redefine it as an online-course state, timetable condition, assessment flag, deadline state, or gate without a further domain decision.
+> an important academic condition, obligation, or maintenance requirement that should be actively preserved from being neglected or displaced when deciding what to do next.
 
-A future design may change the representation once the meaning of `protected` is established. That is an open domain decision, not a migration decision at this stage.
+This is a preservation concept, not a synonym for online delivery, deadlines, assessments, or hard gates. Those situations may create reasons for protection but do not define the state.
+
+The state engine will use conservative, explicit rules and explain what condition is being protected.
 
 ### 2. Current course state is a projection
 
@@ -45,9 +47,9 @@ Decision: every user-owned child referencing a user-owned parent must enforce bo
 
 ### 5. Confirmation must be explicit
 
-academic_events and observations currently default confirmation_status to confirmed.
+`academic_events.confirmation_status` and `observations.confirmation_status` no longer have a database default.
 
-Decision: confirmation is an application/domain decision, not a convenient database default. Assistant interpretations that remain uncertain should be proposed. Explicit, unambiguous user-reported facts may be confirmed.
+The MVP application must explicitly choose `proposed`, `confirmed`, or `rejected`. This prevents a future assistant integration from accidentally turning an interpretation into confirmed academic reality.
 
 ### 6. Provenance needs a canonical vocabulary
 
@@ -95,11 +97,17 @@ These should be hardened deliberately before production. They are separate from 
 
 ### A — Domain integrity
 
-- preserve `protected` while refining its semantics and transition rules
+Completed for the MVP:
+
+- preserve and define `protected`
 - enforce one current academic period per user
-- add missing composite ownership constraints
-- define confirmation behavior
-- establish provenance rules
+- enforce missing composite ownership constraints
+- require explicit confirmation status for events and observations
+
+Deferred:
+
+- broader provenance normalization
+- recurring occurrence identity and duplicate protection
 
 ### B — Recurring occurrences
 
@@ -130,9 +138,23 @@ These should be hardened deliberately before production. They are separate from 
 - no invented academic data
 - no assistant direct-to-database writes
 
-## Exit condition
+## MVP exit condition
 
-Application-layer implementation begins only after course condition/gates, ownership constraints, recurring occurrence identity, confirmation behavior, current-period uniqueness, state projection semantics, and hardening priorities have been deliberately resolved.
+The MVP can proceed once the current schema supports the core academic decision loop:
+
+1. academic period
+2. courses
+3. tasks
+4. assessments
+5. recurring requirements
+6. timetable
+7. events/observations
+8. study sessions
+9. current course state
+10. state history
+11. deterministic next-action calculation
+
+Recurring occurrence generation and persistent availability remain follow-on work rather than blockers for the first deployable version.
 
 ## Principle
 
