@@ -12,6 +12,28 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 
 type SupabaseClient = ReturnType<typeof getSupabaseClient>;
 
+function toUnit(row: any) {
+  if (!row) return row;
+  const { course_type, ...rest } = row;
+  return { ...rest, unit_type: course_type };
+}
+
+function toUnitLinked(row: any) {
+  if (!row) return row;
+  const { course_id, courses, ...rest } = row;
+  return { ...rest, unit_id: course_id, units: courses };
+}
+
+function toUnitState(row: any) {
+  if (!row) return row;
+  const { course_id, ...rest } = row;
+  return { ...rest, unit_id: course_id };
+}
+
+function toUnitLinkedRows(rows: any[] | null | undefined) {
+  return (rows ?? []).map(toUnitLinked);
+}
+
 async function requireCurrentUser(client: SupabaseClient, expectedUserId: string) {
   const { data, error } = await client.auth.getUser();
 
@@ -61,7 +83,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .eq("is_active", true)
       .order("code", { ascending: true });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []).map(toUnit);
   }
 
   async createUnit(input: CreateUnitInput) {
@@ -78,7 +100,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .select()
       .single();
     if (error) throw new Error(error.message);
-    return data;
+    return toUnit(data);
   }
 
   async updateUnit(input: UpdateUnitInput) {
@@ -101,7 +123,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       throw new Error(error.message);
     }
     if (!data) throw new NotFoundError("Unit not found in the current academic period");
-    return data;
+    return toUnit(data);
   }
 
   async archiveUnit(userId: string, academicPeriodId: string, unitId: string) {
@@ -117,7 +139,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!data) throw new NotFoundError("Unit not found in the current academic period");
-    return data;
+    return toUnit(data);
   }
 
   async listUnitStates(userId: string) {
@@ -127,7 +149,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .select("*")
       .eq("user_id", userId);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return (data ?? []).map(toUnitState);
   }
 
   async listUpcomingAssessments(userId: string, academicPeriodId: string) {
@@ -153,7 +175,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .order("due_at", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return toUnitLinkedRows(data as any[]);
   }
   constructor(private readonly client = getSupabaseClient()) {}
 
