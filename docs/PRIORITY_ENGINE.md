@@ -32,7 +32,7 @@ Priority is recalculated whenever material academic conditions change.
 
 ## 2. Priority Is a Decision, Not a Permanent Ranking
 
-Academic Assistant must not permanently rank courses as first, second, third, etc.
+Academic Assistant must not permanently rank units as first, second, third, etc.
 
 The correct decision depends on the current situation.
 
@@ -53,11 +53,11 @@ Economics assignment due tomorrow
 → Economics assignment may dominate
 ~~~
 
-The same course can therefore move in and out of priority without the system declaring it permanently more or less important than another course.
+The same unit can therefore move in and out of priority without the system declaring it permanently more or less important than another unit.
 
 ## 3. Candidate Actions
 
-The priority engine operates on **actions**, not merely courses.
+The priority engine operates on **actions**, not merely units.
 
 A candidate action may be:
 
@@ -72,7 +72,7 @@ A candidate action may be:
 - record or confirm an important academic change
 - prepare for an imminent academic gate
 
-A course becomes relevant through its candidate actions.
+A unit becomes relevant through its candidate actions.
 
 ## 4. Priority Layers
 
@@ -197,14 +197,14 @@ Backlog should normally receive more attention than ordinary future maintenance 
 
 ## 9. Academic Weakness
 
-Weak course state increases the priority of suitable corrective actions.
+Weak unit state increases the priority of suitable corrective actions.
 
 However:
 
 ~~~text
-weak course
+weak unit
 ≠
-always do this course first
+always do this unit first
 ~~~
 
 The engine must still consider:
@@ -222,7 +222,7 @@ The selected action should address the actual state signal.
 
 ## 10. Maintenance and Cooling
 
-Cooling courses require attention before they become weak.
+Cooling units require attention before they become weak.
 
 Maintenance actions may include:
 
@@ -235,7 +235,7 @@ Maintenance actions may include:
 
 Maintenance should not become a universal hourly quota.
 
-The engine should prefer the smallest useful action that meaningfully protects the course when no stronger obligation dominates.
+The engine should prefer the smallest useful action that meaningfully protects the unit when no stronger obligation dominates.
 
 ## 11. Free Time Is an Opportunity
 
@@ -392,7 +392,7 @@ Active obligations
      ↓
 Assessments
      ↓
-Course states
+Unit states
      ↓
 Available block
      ↓
@@ -482,9 +482,9 @@ Possible order:
 7. action requiring less setup
 8. action with greater strategic value
 
-This is a tie-breaking framework, not a permanent ranking of courses.
+This is a tie-breaking framework, not a permanent ranking of units.
 
-## 22. No Permanent Course Priority
+## 22. No Permanent Unit Priority
 
 The engine must never encode rules such as:
 
@@ -494,7 +494,7 @@ Mathematics always second
 Operating Systems always third
 ~~~
 
-Course characteristics can affect action selection, but the current academic situation determines the actual decision.
+Unit characteristics can affect action selection, but the current academic situation determines the actual decision.
 
 The engine should therefore calculate:
 
@@ -505,7 +505,7 @@ current candidate actions
 rather than:
 
 ~~~text
-global course ranking
+global unit ranking
 ~~~
 
 ## 23. Timetable and Actual Reality
@@ -562,7 +562,7 @@ The dashboard's daily decision can use a Daily Boot process:
 3. Load confirmed changes/events
 4. Identify active online requirements
 5. Identify upcoming deadlines
-6. Load current course states
+6. Load current unit states
 7. Load unresolved backlog
 8. Determine available blocks
 9. Generate candidate actions
@@ -586,7 +586,7 @@ Priority should be recalculated after material changes such as:
 - class rescheduled
 - class extended
 - study session completed
-- course state changes
+- unit state changes
 - availability changes
 - current time crosses an important deadline threshold
 
@@ -600,7 +600,7 @@ The priority engine should return a structured decision conceptually similar to:
 NextAction
     candidate_id
     action_type
-    course_id
+    unit_id
     reason
     supporting_factors
     estimated_minutes
@@ -644,7 +644,7 @@ The important point is not that CILS is permanently more important than Programm
 
 The point is that the confirmed expiring obligation changes the current decision.
 
-## 29. Example: Weak Technical Course
+## 29. Example: Weak Technical Unit
 
 Suppose:
 
@@ -729,7 +729,7 @@ The structured priority engine remains authoritative for the decision.
 
 It must not:
 
-- permanently rank courses
+- permanently rank units
 - invent deadlines
 - invent assessment weights
 - invent academic consequences
@@ -738,8 +738,8 @@ It must not:
 - equate hours with academic value
 - blindly follow the timetable after reality changes
 - use an unexplained AI-generated priority score as authority
-- ignore a confirmed hard gate because another course is generally "more important"
-- force every course into equal study time
+- ignore a confirmed hard gate because another unit is generally "more important"
+- force every unit into equal study time
 - compensate for disruptions by demanding exhaustion
 - select actions that do not address the identified problem merely because they are easy
 
@@ -755,7 +755,7 @@ for each candidate action:
     determine gate status
     determine deadline pressure
     determine backlog relevance
-    determine course-state relevance
+    determine unit-state relevance
     determine action effectiveness
     determine block/context/energy fit
     determine strategic value
