@@ -32,5 +32,5 @@ Persistence is represented by the AcademicRepository port, keeping Supabase-spec
 - Event and observation confirmation is explicit.
 - Study duration can be derived from timestamps.
 - Commands do not invent academic facts.
-- Commands do not calculate course state.
+- Commands do not calculate unit state.
 - Commands do not calculate priority.
