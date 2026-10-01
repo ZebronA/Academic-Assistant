@@ -13,10 +13,10 @@ type AssessmentTable = {
   Update: Json;
   Relationships: [
     {
-      foreignKeyName: "assessments_course_id_fkey";
-      columns: ["course_id"];
+      foreignKeyName: "assessments_unit_id_fkey";
+      columns: ["unit_id"];
       isOneToOne: false;
-      referencedRelation: "courses";
+      referencedRelation: "units;
       referencedColumns: ["id"];
     }
   ];
