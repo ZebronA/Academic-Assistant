@@ -713,7 +713,14 @@ export default function Home() {
               <span className="text-sm text-zinc-500">{courses.length} active</span>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/30">
+              <div className="hidden grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-zinc-800 px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-600 sm:grid">
+                <span>Code</span>
+                <span>Course</span>
+                <span>State</span>
+                <span className="sr-only">Actions</span>
+              </div>
+
               {courses.map((course) => {
                 const state =
                   derivedStateByCourse.get(course.id) ?? stateByCourse.get(course.id);
@@ -722,9 +729,9 @@ export default function Home() {
                   <form
                     key={course.id}
                     onSubmit={saveCourseEdit}
-                    className="rounded-2xl border border-zinc-700 bg-zinc-900/70 p-5 sm:p-6"
+                    className="border-b border-zinc-800 bg-zinc-900/70 p-4 last:border-b-0 sm:p-5"
                   >
-                    <div className="grid gap-3 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)] lg:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_160px]">
+                    <div className="grid gap-3 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_160px]">
                       <input
                         className={inputClass()}
                         value={editingCourseCode}
@@ -782,45 +789,49 @@ export default function Home() {
                 ) : (
                   <article
                     key={course.id}
-                    className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5"
+                    className="grid gap-2 border-b border-zinc-800 px-4 py-3.5 last:border-b-0 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] sm:items-center sm:gap-4"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-xs font-medium text-zinc-500">{course.code}</p>
-                        <h3 className="mt-1 font-medium">{course.name}</h3>
-                      </div>
+                    <p className="text-xs font-medium tracking-wide text-zinc-500 sm:text-sm">
+                      {course.code}
+                    </p>
+
+                    <div className="min-w-0">
+                      <h3 className="truncate font-medium text-zinc-200" title={course.name}>
+                        {course.name}
+                      </h3>
+                      <p className="mt-1 text-xs text-zinc-600 sm:hidden">
+                        {course.course_type}
+                        {state?.backlog ? " · backlog recorded" : ""}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       {state && (
                         <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300">
                           {stateLabel(state.state)}
                         </span>
                       )}
+                      {state?.backlog && (
+                        <span className="hidden rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-400 sm:inline-flex">
+                          Backlog
+                        </span>
+                      )}
                     </div>
 
-                    <p className="mt-3 text-sm text-zinc-500">
-                      {course.course_type}
-                      {state?.backlog ? " · backlog recorded" : ""}
-                    </p>
-
-                    {state?.state_reason && (
-                      <p className="mt-2 text-xs leading-5 text-zinc-600">{state.state_reason}</p>
-                    )}
-
-                    <div className="mt-4">
-                      <button
-                        type="button"
-                        onClick={() => startEditingCourse(course)}
-                        disabled={busy}
-                        className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
-                      >
-                        Edit course
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => startEditingCourse(course)}
+                      disabled={busy}
+                      className="justify-self-start rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 sm:justify-self-auto"
+                    >
+                      Edit
+                    </button>
                   </article>
                 )
               })}
 
               {courses.length === 0 && (
-                <p className="rounded-2xl border border-dashed border-zinc-800 p-6 text-sm text-zinc-500 sm:col-span-2">
+                <p className="p-6 text-sm text-zinc-500">
                   No courses yet. Add your first course below.
                 </p>
               )}
