@@ -113,6 +113,8 @@ export default function Home() {
   const [editingCourseName, setEditingCourseName] = useState("");
   const [editingCourseType, setEditingCourseType] = useState<CourseType>("mixed");
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [removeConfirmationCourseId, setRemoveConfirmationCourseId] = useState<string | null>(null);
+  const [removeConfirmationCode, setRemoveConfirmationCode] = useState("");
 
   const [sessionCourseId, setSessionCourseId] = useState("");
   const [sessionMinutes, setSessionMinutes] = useState("");
@@ -239,11 +241,15 @@ export default function Home() {
     setEditingCourseCode(course.code);
     setEditingCourseName(course.name);
     setEditingCourseType(course.course_type);
+    setRemoveConfirmationCourseId(null);
+    setRemoveConfirmationCode("");
     setMessage("");
   }
 
   function cancelEditingCourse() {
     setEditingCourseId(null);
+    setRemoveConfirmationCourseId(null);
+    setRemoveConfirmationCode("");
     setEditingCourseCode("");
     setEditingCourseName("");
     setEditingCourseType("mixed");
@@ -266,10 +272,10 @@ export default function Home() {
         courseType: editingCourseType,
       });
       cancelEditingCourse();
-      setMessage("Course updated.");
+      setMessage("Unit updated.");
       await loadAcademicData(userId);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not update course.");
+      setMessage(error instanceof Error ? error.message : "Could not update unit.");
     } finally {
       setBusy(false);
     }
@@ -563,7 +569,7 @@ export default function Home() {
               Set up your academic period
             </h1>
             <p className="mt-3 text-zinc-400">
-              This creates the context in which your courses, obligations, and decisions live.
+              This creates the context in which your units, obligations, and decisions live.
             </p>
           </header>
 
@@ -639,7 +645,7 @@ export default function Home() {
 
         <section className="mt-6 grid gap-3 sm:grid-cols-4">
           {[
-            ["Courses", courses.length, "active"],
+            ["Units", courses.length, "active"],
             ["Open tasks", tasks.length, overdueTasks ? `${overdueTasks} overdue` : "on track"],
             ["Assessments", assessments.length, urgentAssessments ? `${urgentAssessments} within 7 days` : "none within 7 days"],
             ["States", Object.values(stateCounts).reduce((sum, count) => sum + count, 0), "derived from evidence"],
@@ -706,9 +712,9 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-medium">Courses</h2>
+                <h2 className="text-lg font-medium">Units</h2>
                 <p className="mt-1 text-sm text-zinc-600">
-                  Current academic condition derived from recorded evidence.
+                  Current academic condition derived from recorded unit evidence.
                 </p>
               </div>
               <span className="text-sm text-zinc-500">{courses.length} active</span>
@@ -717,7 +723,7 @@ export default function Home() {
             <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/30">
               <div className="hidden grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-zinc-800 px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-600 sm:grid">
                 <span>Code</span>
-                <span>Course</span>
+                <span>Unit</span>
                 <span>State</span>
                 <span className="sr-only">Actions</span>
               </div>
@@ -745,7 +751,7 @@ export default function Home() {
                         className={inputClass()}
                         value={editingCourseName}
                         onChange={(event) => setEditingCourseName(event.target.value)}
-                        placeholder="Course name"
+                        placeholder="Unit name"
                         required
                       />
                       <select
@@ -777,16 +783,43 @@ export default function Home() {
                       <button
                         type="button"
                         onClick={() => {
-                          if (window.confirm("Remove this course from the current semester? Existing academic records will be preserved.")) {
-                            void removeCourse(course.id);
-                          }
+                          setRemoveConfirmationCourseId(
+                            removeConfirmationCourseId === course.id ? null : course.id,
+                          );
+                          setRemoveConfirmationCode("");
                         }}
                         disabled={busy}
-                        className="rounded-xl border border-red-900/60 px-4 py-2 text-sm text-red-300 hover:bg-red-950/30 disabled:opacity-50"
+                        className="rounded-xl border border-red-950/70 px-4 py-2 text-sm font-medium text-red-400 hover:border-red-900 hover:bg-red-950/20 disabled:opacity-50"
                       >
-                        Remove course
+                        Archive unit
                       </button>
                     </div>
+                    {removeConfirmationCourseId === course.id && (
+                      <div className="mt-4 rounded-xl border border-red-950/70 bg-red-950/10 p-4">
+                        <p className="text-sm font-medium text-red-300">Archive this unit?</p>
+                        <p className="mt-1 text-xs leading-5 text-zinc-500">
+                          Its existing tasks, assessments, evidence, sessions, and state history will be preserved.
+                          Type <span className="font-medium text-zinc-300">{course.code}</span> to confirm.
+                        </p>
+                        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                          <input
+                            className={inputClass()}
+                            value={removeConfirmationCode}
+                            onChange={(event) => setRemoveConfirmationCode(event.target.value.toUpperCase())}
+                            placeholder={course.code}
+                            aria-label={"Type " + course.code + " to confirm archiving"}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => void removeCourse(course.id)}
+                            disabled={busy || removeConfirmationCode.trim().toUpperCase() !== course.code}
+                            className="rounded-xl bg-red-950 px-4 py-3 text-sm font-medium text-red-200 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Confirm archive
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </form>
                 ) : (
                   <div key={course.id} className="border-b border-zinc-800 last:border-b-0">
@@ -851,7 +884,7 @@ export default function Home() {
                           </div>
                           <div className="grid grid-cols-2 gap-3 text-sm sm:min-w-[220px]">
                             <div>
-                              <p className="text-xs text-zinc-600">Course type</p>
+                              <p className="text-xs text-zinc-600">Unit type</p>
                               <p className="mt-1 text-zinc-300">{course.course_type}</p>
                             </div>
                             <div>
@@ -911,7 +944,7 @@ export default function Home() {
                 />
                 <input
                   className={inputClass()}
-                  placeholder="Course name"
+                  placeholder="Unit name"
                   value={courseName}
                   onChange={(event) => setCourseName(event.target.value)}
                   required
