@@ -7,7 +7,7 @@ export type ImportedUnit = {
   delivery: string;
 };
 
-const COURSE_CODE = /\b[A-Z]{2,5}\s?\d{4}\b/g;
+const UNIT_CODE = /\b[A-Z]{2,5}\s?\d{4}\b/g;
 const NOISE = /^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Online|Service|September - December 2026 Timetable|Bsc IT Year 1 Semester 1|Signed)$/i;
 
 function normalizeText(value: string) {
@@ -36,7 +36,7 @@ function classifyUnitType(delivery: string) {
 }
 
 function extractCandidateRecords(text: string) {
-  const matches = [...text.matchAll(COURSE_CODE)];
+  const matches = [...text.matchAll(UNIT_CODE)];
   const records: ImportedUnit[] = [];
 
   for (let index = 0; index < matches.length; index += 1) {
