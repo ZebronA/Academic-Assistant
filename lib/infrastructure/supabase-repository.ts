@@ -162,7 +162,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .in("status", ["upcoming", "in_progress"])
       .order("due_at", { ascending: true, nullsFirst: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return toUnitLinkedRows(data as any[]);
   }
 
   async listOpenTasks(userId: string) {
