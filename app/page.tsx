@@ -112,6 +112,7 @@ export default function Home() {
   const [editingCourseCode, setEditingCourseCode] = useState("");
   const [editingCourseName, setEditingCourseName] = useState("");
   const [editingCourseType, setEditingCourseType] = useState<CourseType>("mixed");
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
   const [sessionCourseId, setSessionCourseId] = useState("");
   const [sessionMinutes, setSessionMinutes] = useState("");
@@ -724,6 +725,7 @@ export default function Home() {
               {courses.map((course) => {
                 const state =
                   derivedStateByCourse.get(course.id) ?? stateByCourse.get(course.id);
+                const isSelected = selectedCourseId === course.id;
 
                 return editingCourseId === course.id ? (
                   <form
@@ -787,46 +789,90 @@ export default function Home() {
                     </div>
                   </form>
                 ) : (
-                  <article
-                    key={course.id}
-                    className="grid gap-2 border-b border-zinc-800 px-4 py-3.5 last:border-b-0 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] sm:items-center sm:gap-4"
-                  >
-                    <p className="text-xs font-medium tracking-wide text-zinc-500 sm:text-sm">
-                      {course.code}
-                    </p>
-
-                    <div className="min-w-0">
-                      <h3 className="truncate font-medium text-zinc-200" title={course.name}>
-                        {course.name}
-                      </h3>
-                      <p className="mt-1 text-xs text-zinc-600 sm:hidden">
-                        {course.course_type}
-                        {state?.backlog ? " · backlog recorded" : ""}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      {state && (
-                        <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300">
-                          {stateLabel(state.state)}
-                        </span>
-                      )}
-                      {state?.backlog && (
-                        <span className="hidden rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-400 sm:inline-flex">
-                          Backlog
-                        </span>
-                      )}
-                    </div>
-
+                  <div key={course.id} className="border-b border-zinc-800 last:border-b-0">
                     <button
                       type="button"
-                      onClick={() => startEditingCourse(course)}
-                      disabled={busy}
-                      className="justify-self-start rounded-lg border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 disabled:opacity-50 sm:justify-self-auto"
+                      onClick={() => setSelectedCourseId(isSelected ? null : course.id)}
+                      className="grid w-full gap-2 px-4 py-3.5 text-left transition hover:bg-zinc-900/60 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-zinc-600 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] sm:items-center sm:gap-4"
+                      aria-expanded={isSelected}
                     >
-                      Edit
+                      <p className="text-xs font-medium tracking-wide text-zinc-500 sm:text-sm">
+                        {course.code}
+                      </p>
+                      <div className="min-w-0">
+                        <h3 className="truncate font-medium text-zinc-200" title={course.name}>
+                          {course.name}
+                        </h3>
+                        <p className="mt-1 text-xs text-zinc-600 sm:hidden">
+                          {course.course_type}
+                          {state?.backlog ? " · backlog recorded" : ""}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {state && (
+                          <span className="rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300">
+                            {stateLabel(state.state)}
+                          </span>
+                        )}
+                        {state?.backlog && (
+                          <span className="hidden rounded-full border border-zinc-700 px-2.5 py-1 text-xs text-zinc-400 sm:inline-flex">
+                            Backlog
+                          </span>
+                        )}
+                      </div>
+                      <span
+                        className="justify-self-start text-xs text-zinc-600 sm:justify-self-auto"
+                        aria-hidden="true"
+                      >
+                        {isSelected ? "Hide details" : "Details"}
+                      </span>
                     </button>
-                  </article>
+
+                    {isSelected && state && (
+                      <div className="border-t border-zinc-800 bg-zinc-950/40 px-4 py-4 sm:px-5">
+                        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
+                          <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                              Current state
+                            </p>
+                            <p className="mt-1 text-sm leading-6 text-zinc-300">
+                              {state.state_reason ?? "No deeper state explanation is available yet."}
+                            </p>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-sm sm:min-w-[220px]">
+                            <div>
+                              <p className="text-xs text-zinc-600">Course type</p>
+                              <p className="mt-1 text-zinc-300">{course.course_type}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-zinc-600">Backlog</p>
+                              <p className="mt-1 text-zinc-300">{state.backlog ? "Recorded" : "None recorded"}</p>
+                            </div>
+                            {state.understanding_level != null && (
+                              <div>
+                                <p className="text-xs text-zinc-600">Understanding</p>
+                                <p className="mt-1 text-zinc-300">{state.understanding_level}/5</p>
+                              </div>
+                            )}
+                            {state.last_practiced_at && (
+                              <div>
+                                <p className="text-xs text-zinc-600">Last practiced</p>
+                                <p className="mt-1 text-zinc-300">
+                                  {new Date(state.last_practiced_at).toLocaleDateString()}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {isSelected && !state && (
+                      <div className="border-t border-zinc-800 bg-zinc-950/40 px-4 py-4 text-sm text-zinc-500 sm:px-5">
+                        No academic state has been derived for this course yet.
+                      </div>
+                    )}
+                  </div>
                 )
               })}
 
