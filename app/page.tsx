@@ -14,6 +14,7 @@ import {
 import { calculateCourseState } from "@/lib/domain/academic-state-engine";
 import { calculateNextAction } from "@/lib/domain/priority-engine";
 import type { AssessmentType, CourseState, TaskType } from "@/lib/domain/types";
+import { TimetableImport } from "@/components/timetable-import";
 
 type Period = { id: string; name: string; starts_on: string; ends_on: string };
 type CourseType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
@@ -681,7 +682,13 @@ export default function Home() {
               )}
             </div>
 
-            <form onSubmit={addCourse} className={`${sectionClass()} mt-4`}>
+            <TimetableImport
+            userId={userId}
+            academicPeriodId={period.id}
+            onImported={() => loadAcademicData(userId)}
+          />
+
+          <form onSubmit={addCourse} className={`${sectionClass()} mt-4`}>
               <h3 className="font-medium">Add course</h3>
               <div className="mt-3 grid gap-3 md:grid-cols-[110px_1fr_150px_auto]">
                 <input
