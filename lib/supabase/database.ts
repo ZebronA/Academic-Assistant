@@ -16,7 +16,7 @@ type AssessmentTable = {
       foreignKeyName: "assessments_unit_id_fkey";
       columns: ["unit_id"];
       isOneToOne: false;
-      referencedRelation: "units;
+      referencedRelation: "units";
       referencedColumns: ["id"];
     }
   ];
