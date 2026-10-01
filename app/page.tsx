@@ -199,7 +199,7 @@ export default function Home() {
   const nextAction = useMemo(() => {
     const candidates = [
       ...tasks.map((task) => {
-        const state = task.course_id ? stateByCourse.get(task.course_id) : undefined;
+        const state = task.course_id ? (derivedStateByCourse.get(task.course_id) ?? stateByCourse.get(task.course_id)) : undefined;
         return {
           id: task.id,
           kind: "task" as const,
@@ -259,7 +259,7 @@ export default function Home() {
 
       <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
         <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Next action</p>
-        {nextAction ? <div className="mt-3"><h2 className="text-2xl font-semibold">{nextAction.item.title}</h2><p className="mt-2 text-zinc-400">{nextAction.course ? nextAction.course.code + " · " + nextAction.course.name : "Academic work"}{nextAction.days != null ? " · " + (nextAction.days <= 0 ? "due now" : "due in " + nextAction.days + " day" + (nextAction.days === 1 ? "" : "s")) : ""}</p><div className="mt-3 space-y-2"><p className="text-sm text-zinc-400">{nextAction.reason}</p><ul className="space-y-1 text-xs text-zinc-500">{nextAction.factors.map((factor) => <li key={factor}>• {factor}</li>)}</ul><p className="pt-1 text-xs text-zinc-600">Deterministic MVP decision from recorded academic data; not an AI judgment.</p></div></div> : <p className="mt-3 text-zinc-400">No actionable academic work is recorded yet.</p>}
+        {nextAction ? <div className="mt-3"><h2 className="text-2xl font-semibold">{nextAction.title}</h2><p className="mt-2 text-zinc-400">{nextAction.actionType === "assessment" ? "Assessment" : "Task"}{nextAction.deadline ? " · " + (daysUntil(nextAction.deadline)! <= 0 ? "due now" : "due in " + daysUntil(nextAction.deadline) + " day" + (daysUntil(nextAction.deadline) === 1 ? "" : "s")) : ""}</p><div className="mt-3 space-y-2"><p className="text-sm text-zinc-400">{nextAction.reason}</p><ul className="space-y-1 text-xs text-zinc-500">{nextAction.factors.map((factor) => <li key={factor}>• {factor}</li>)}</ul><p className="pt-1 text-xs text-zinc-600">Deterministic MVP decision from recorded academic data; not an AI judgment.</p></div></div> : <p className="mt-3 text-zinc-400">No actionable academic work is recorded yet.</p>}
       </section>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.3fr_.7fr]"><section>
