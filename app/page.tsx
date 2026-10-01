@@ -8,6 +8,8 @@ import {
   createAcademicPeriod,
   createAssessment,
   createCourse,
+  updateCourse,
+  archiveCourse,
   createTask,
   recordStudySession,
 } from "@/lib/application/commands";
@@ -104,6 +106,10 @@ export default function Home() {
   const [courseCode, setCourseCode] = useState("");
   const [courseName, setCourseName] = useState("");
   const [courseType, setCourseType] = useState<CourseType>("mixed");
+  const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
+  const [editingCourseCode, setEditingCourseCode] = useState("");
+  const [editingCourseName, setEditingCourseName] = useState("");
+  const [editingCourseType, setEditingCourseType] = useState<CourseType>("mixed");
 
   const [sessionCourseId, setSessionCourseId] = useState("");
   const [sessionMinutes, setSessionMinutes] = useState("");
@@ -218,6 +224,67 @@ export default function Home() {
       await loadAcademicData(userId);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not add course.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function startEditingCourse(course: Course) {
+    setEditingCourseId(course.id);
+    setEditingCourseCode(course.code);
+    setEditingCourseName(course.name);
+    setEditingCourseType(course.course_type);
+    setMessage("");
+  }
+
+  function cancelEditingCourse() {
+    setEditingCourseId(null);
+    setEditingCourseCode("");
+    setEditingCourseName("");
+    setEditingCourseType("mixed");
+  }
+
+  async function saveCourseEdit(event: FormEvent) {
+    event.preventDefault();
+    if (!userId || !editingCourseId) return;
+
+    setBusy(true);
+    setMessage("");
+
+    try {
+      await updateCourse(repository, {
+        userId,
+        courseId: editingCourseId,
+        code: editingCourseCode,
+        name: editingCourseName,
+        courseType: editingCourseType,
+      });
+      cancelEditingCourse();
+      setMessage("Course updated.");
+      await loadAcademicData(userId);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not update course.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeCourse(id: string) {
+    if (!userId) return;
+    const course = courses.find((item) => item.id === id);
+    if (!course) return;
+    if (!window.confirm(`Remove ${course.code} from this academic period? Existing academic records will be preserved.`)) return;
+
+    setBusy(true);
+    setMessage("");
+
+    try {
+      await archiveCourse(repository, { userId, courseId: id });
+      if (editingCourseId === id) cancelEditingCourse();
+      setMessage("Course removed from the active course list. Existing records were preserved.");
+      await loadAcademicData(userId);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not remove course.");
     } finally {
       setBusy(false);
     }
@@ -646,7 +713,64 @@ export default function Home() {
                 const state =
                   derivedStateByCourse.get(course.id) ?? stateByCourse.get(course.id);
 
-                return (
+                return editingCourseId === course.id ? (
+                  <form
+                    key={course.id}
+                    onSubmit={saveCourseEdit}
+                    className="rounded-2xl border border-zinc-700 bg-zinc-900/70 p-5"
+                  >
+                    <div className="grid gap-3 md:grid-cols-[120px_1fr_160px]">
+                      <input
+                        className={inputClass()}
+                        value={editingCourseCode}
+                        onChange={(event) => setEditingCourseCode(event.target.value.toUpperCase())}
+                        placeholder="Code"
+                        required
+                      />
+                      <input
+                        className={inputClass()}
+                        value={editingCourseName}
+                        onChange={(event) => setEditingCourseName(event.target.value)}
+                        placeholder="Course name"
+                        required
+                      />
+                      <select
+                        className={inputClass()}
+                        value={editingCourseType}
+                        onChange={(event) => setEditingCourseType(event.target.value as CourseType)}
+                      >
+                        {["technical", "conceptual", "practical", "mathematical", "online", "mixed"].map(
+                          (value) => <option key={value}>{value}</option>,
+                        )}
+                      </select>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="submit"
+                        disabled={busy}
+                        className="rounded-xl bg-white px-4 py-2 text-sm font-medium text-zinc-950 disabled:opacity-50"
+                      >
+                        Save changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEditingCourse}
+                        disabled={busy}
+                        className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void removeCourse(course.id)}
+                        disabled={busy}
+                        className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:text-white disabled:opacity-50"
+                      >
+                        Remove course
+                      </button>
+                    </div>
+                  </form>
+                ) : (
                   <article
                     key={course.id}
                     className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5"
@@ -671,8 +795,19 @@ export default function Home() {
                     {state?.state_reason && (
                       <p className="mt-2 text-xs leading-5 text-zinc-600">{state.state_reason}</p>
                     )}
+
+                    <div className="mt-4">
+                      <button
+                        type="button"
+                        onClick={() => startEditingCourse(course)}
+                        disabled={busy}
+                        className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-300 hover:bg-zinc-800 disabled:opacity-50"
+                      >
+                        Edit course
+                      </button>
+                    </div>
                   </article>
-                );
+                )
               })}
 
               {courses.length === 0 && (
