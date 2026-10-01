@@ -25,6 +25,18 @@ async function requireCurrentUser(client: SupabaseClient, expectedUserId: string
 }
 
 export class SupabaseAcademicRepository implements AcademicRepository {
+  async listOpenTasks(userId: string) {
+    await requireCurrentUser(this.client, userId);
+    const { data, error } = await this.client
+      .from("tasks")
+      .select("*")
+      .eq("user_id", userId)
+      .in("status", ["pending", "in_progress"])
+      .order("due_at", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
   constructor(private readonly client = getSupabaseClient()) {}
 
   async createTask(input: CreateTaskInput) {
