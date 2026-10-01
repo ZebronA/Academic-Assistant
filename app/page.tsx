@@ -17,6 +17,7 @@ import { calculateUnitState } from "@/lib/domain/academic-state-engine";
 import { calculateNextAction } from "@/lib/domain/priority-engine";
 import type { AssessmentType, UnitState, TaskType } from "@/lib/domain/types";
 import { TimetableImport } from "@/components/timetable-import";
+import { NotificationSetup } from "@/components/notification-setup";
 
 type Period = { id: string; name: string; academic_year_id: string; semester: 1 | 2; starts_on: string; ends_on: string };
 type UnitType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
@@ -646,6 +647,10 @@ export default function Home() {
             Sign out
           </button>
         </header>
+
+        <div className="mt-6">
+          <NotificationSetup />
+        </div>
 
         <section className="mt-6 grid gap-3 sm:grid-cols-4">
           {[
