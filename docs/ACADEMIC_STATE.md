@@ -104,19 +104,15 @@ These labels describe current academic condition, not student ability or persona
 
 ### 4.1 Protected
 
-`protected` is retained as a current course-state value, but its meaning is broader than a single type of obligation.
+`protected` means that an important academic condition, obligation, or maintenance requirement should be actively preserved from being neglected or displaced when deciding what the student should do next.
 
-Working interpretation:
+Protection is different from urgency and different from academic weakness.
 
-> Protected indicates that an important academic condition or maintenance pattern should be deliberately preserved from being displaced or neglected.
+Examples can include a recurring requirement whose continuity matters or a maintenance activity that should not repeatedly lose out to short-term deadlines. An online requirement can be protected, but "online" is not the definition of protected.
 
-Online or recurring requirements may be examples of situations where protection is useful. They are not the definition of `protected`.
+For the MVP, the state engine treats `protected` as a deliberate preservation signal. It should not automatically be assigned merely because a course is online, has a deadline, or has an assessment.
 
-Likewise, a deadline, assessment, timetable entry, or academic gate may create a reason to protect something without automatically making `protected` synonymous with that gate.
-
-Protected does not necessarily mean the course is weak. It may coexist with healthy academic performance while indicating that some important condition or maintenance pattern should be deliberately preserved.
-
-The exact evidence and transition rules for entering or leaving `protected` remain unresolved. Until those rules are deliberately defined, the state engine must not invent them or reduce `protected` to a particular implementation such as online-course protection.
+The transition rules remain intentionally conservative and explicit. The engine must be able to explain what condition is being protected and why.
 
 ### 4.2 Stable
 
@@ -557,13 +553,19 @@ The exact transition rules must be implemented explicitly rather than left to th
 
 ## 16. Protected State Transitions
 
-`protected` remains part of the current five-state vocabulary, but no transition rules are established yet.
+For the MVP, a course can be placed in `protected` when there is a confirmed, important condition that needs deliberate preservation and would otherwise be at meaningful risk of being displaced by competing work.
 
-The reviewed product discussion does not define what causes a course to enter or leave `protected`. It also does not establish that `protected` is equivalent to a gate, online requirement, deadline, timetable commitment, or maintenance condition.
+Examples include:
 
-Therefore the state engine must leave this concept unresolved until the domain is deliberately specified. Any future transition rules should be explicit, deterministic, evidence-based, and explainable.
+- a recurring academic requirement that must continue to be maintained
+- an important maintenance activity that should not repeatedly be deferred
+- another confirmed academic condition where continued attention is necessary to preserve progress
 
-The relationship between `protected` and the other course-state values is also unresolved. Because the current database stores one `state` value, we should not assume that `protected` is a second independent dimension without a deliberate schema decision.
+The engine must not infer protection from delivery mode alone.
+
+Leaving `protected` should occur when the protected condition is resolved, no longer relevant, or the course's current condition is better represented by another state.
+
+These rules are intentionally conservative. The MVP should prefer an explainable protection decision over frequent automatic transitions.
 
 ## 17. State Calculation
 
