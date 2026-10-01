@@ -30,6 +30,23 @@ export async function createCourse(repo: AcademicRepository, input: CreateCourse
   return repo.createCourse(input);
 }
 
+export async function updateCourse(
+  repo: AcademicRepository,
+  input: { userId: string; courseId: string; code: string; name: string; courseType: CreateCourseInput["courseType"] },
+) {
+  requireText(input.userId, "userId"); requireText(input.courseId, "courseId");
+  requireText(input.code, "code"); requireText(input.name, "name");
+  return repo.updateCourse(input);
+}
+
+export async function archiveCourse(
+  repo: AcademicRepository,
+  input: { userId: string; courseId: string },
+) {
+  requireText(input.userId, "userId"); requireText(input.courseId, "courseId");
+  return repo.archiveCourse(input.userId, input.courseId);
+}
+
 export async function createTask(repo: AcademicRepository, input: CreateTaskInput) {
   requireText(input.userId, "userId"); requireText(input.title, "title");
   requirePositiveMinutes(input.estimatedMinutes, "estimatedMinutes");
