@@ -725,10 +725,11 @@ export default function Home() {
             </div>
 
             <div className="mt-4 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/30">
-              <div className="hidden grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] items-center gap-4 border-b border-zinc-800 px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-600 sm:grid">
+              <div className="hidden grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto_auto] items-center gap-4 border-b border-zinc-800 px-4 py-3 text-xs font-medium uppercase tracking-wide text-zinc-600 sm:grid">
                 <span>Code</span>
                 <span>Unit</span>
                 <span>State</span>
+                <span>Details</span>
                 <span className="sr-only">Actions</span>
               </div>
 
@@ -827,12 +828,13 @@ export default function Home() {
                   </form>
                 ) : (
                   <div key={course.id} className="border-b border-zinc-800 last:border-b-0">
-                    <div className="grid gap-2 px-4 py-3.5 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] sm:items-center sm:gap-4">
+                    <div className="grid gap-2 px-4 py-3.5 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto_auto] sm:items-center sm:gap-4">
                       <button
                         type="button"
                         onClick={() => setSelectedCourseId(isSelected ? null : course.id)}
-                        className="contents text-left focus:outline-none"
+                        className="col-span-full grid w-full grid-cols-[minmax(110px,140px)_minmax(0,1fr)_auto_auto] items-center gap-4 text-left focus:outline-none focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-zinc-500 sm:col-span-4"
                         aria-expanded={isSelected}
+                        aria-label={isSelected ? `Hide details for ${course.code}` : `Show details for ${course.code}`}
                       >
                         <p className="text-xs font-medium tracking-wide text-zinc-500 sm:text-sm">
                           {course.code}
@@ -858,10 +860,7 @@ export default function Home() {
                             </span>
                           )}
                         </div>
-                        <span
-                          className="justify-self-start text-xs text-zinc-600 sm:justify-self-auto"
-                          aria-hidden="true"
-                        >
+                        <span className="justify-self-start text-xs text-zinc-600 sm:justify-self-auto">
                           {isSelected ? "Hide details" : "Details"}
                         </span>
                       </button>
