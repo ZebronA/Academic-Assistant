@@ -6,7 +6,7 @@ This records the first reconciliation between the canonical domain documents and
 
 ## Live baseline
 
-Tables currently present: profiles, academic_periods, courses, course_states, tasks, assessments, academic_events, observations, recurring_requirements, timetable_entries, study_sessions, course_state_history.
+Tables currently present: profiles, academic_periods, units, course_states, tasks, assessments, academic_events, observations, recurring_requirements, timetable_entries, study_sessions, course_state_history.
 
 Current migrations: initial_academic_assistant_schema, add_academic_events, formalize_academic_v0_model, fix_task_ownership_constraint.
 
@@ -16,7 +16,7 @@ All listed tables currently have RLS enabled.
 
 ### 1. Protected semantics are established for the MVP
 
-The current course state values are protected, stable, cooling, weak, and critical.
+The current unit state values are protected, stable, cooling, weak, and critical.
 
 For the MVP, `protected` means:
 
@@ -26,7 +26,7 @@ This is a preservation concept, not a synonym for online delivery, deadlines, as
 
 The state engine will use conservative, explicit rules and explain what condition is being protected.
 
-### 2. Current course state is a projection
+### 2. Current unit state is a projection
 
 course_states should be treated as a read-oriented current projection. Evidence should drive recalculation, and course_state_history should preserve meaningful transitions. Direct manual state editing should not be the normal application path.
 
@@ -41,7 +41,7 @@ Decision: introduce a recurring-occurrence concept so each generated instance ha
 Most user-owned parent relationships already use composite ownership constraints. Two confirmed gaps need correction:
 
 - tasks to recurring_requirements currently rely on a simple parent foreign key rather than a user-scoped relationship.
-- course_state_history currently lacks the same composite user/course ownership constraint used by course_states.
+- course_state_history currently lacks the same composite user/unit ownership constraint used by course_states.
 
 Decision: every user-owned child referencing a user-owned parent must enforce both ownership and identity through the database relationship.
 
@@ -143,14 +143,14 @@ Deferred:
 The MVP can proceed once the current schema supports the core academic decision loop:
 
 1. academic period
-2. courses
+2. units
 3. tasks
 4. assessments
 5. recurring requirements
 6. timetable
 7. events/observations
 8. study sessions
-9. current course state
+9. current unit state
 10. state history
 11. deterministic next-action calculation
 
