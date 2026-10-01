@@ -615,7 +615,7 @@ export default function Home() {
 
             {nextAction?.actionType === "task" && (
               <button
-                onClick={() => void finishTask(nextAction.id)}
+                onClick={() => void finishTask(nextAction.candidateId)}
                 disabled={busy}
                 className="shrink-0 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-950 disabled:opacity-50"
               >
