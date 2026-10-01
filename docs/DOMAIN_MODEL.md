@@ -193,15 +193,13 @@ Current states:
 
 ### Protected state
 
-`protected` is intentionally retained as part of the current course-state vocabulary.
+`protected` is retained in the current course-state vocabulary because it already exists in the implementation.
 
-It should not be defined simply as an online-course state, a timetable condition, or an assessment/deadline flag. Those are possible contexts in which protection may matter, but they do not define the concept.
+The reviewed product discussion does not define the semantics of `protected` or specify its transition rules. It therefore must not be given a new definition here by inference.
 
-Working interpretation:
+For now, `protected` is a **documented unresolved domain concept**. Its meaning, relationship to the other course states, evidence requirements, and transition rules must be established from the product design before the state engine or schema is finalized around it.
 
-> Protected indicates that an important academic condition or maintenance pattern should be deliberately preserved from being displaced or neglected.
-
-The exact evidence and transition rules for entering or leaving `protected` are not finalized yet. The application must not invent those rules or silently redefine `protected` around a single use case.
+In particular, the system must not redefine `protected` around a specific example such as an online course, recurring requirement, timetable entry, assessment, or deadline unless that relationship is explicitly established as part of the domain model.
 
 Supporting attributes currently include:
 
