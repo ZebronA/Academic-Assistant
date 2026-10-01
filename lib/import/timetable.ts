@@ -1,9 +1,9 @@
 "use client";
 
-export type ImportedCourse = {
+export type ImportedUnit = {
   code: string;
   name: string;
-  courseType: "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
+  unitType: "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
   delivery: string;
 };
 
@@ -28,7 +28,7 @@ function classifyDelivery(segment: string) {
   return "Not specified";
 }
 
-function classifyCourseType(delivery: string) {
+function classifyUnitType(delivery: string) {
   if (delivery === "Online") return "online" as const;
   if (delivery === "Lab") return "practical" as const;
   if (delivery === "Lecture + lab" || delivery === "Online + in-person") return "mixed" as const;
@@ -37,7 +37,7 @@ function classifyCourseType(delivery: string) {
 
 function extractCandidateRecords(text: string) {
   const matches = [...text.matchAll(COURSE_CODE)];
-  const records: ImportedCourse[] = [];
+  const records: ImportedUnit[] = [];
 
   for (let index = 0; index < matches.length; index += 1) {
     const code = normalizeText(matches[index][0]).replace(/\s+(?=\d)/, " ");
@@ -58,13 +58,13 @@ function extractCandidateRecords(text: string) {
     if (!name || name.length < 4) continue;
 
     const delivery = classifyDelivery(segment);
-    records.push({ code, name, delivery, courseType: classifyCourseType(delivery) });
+    records.push({ code, name, delivery, unitType: classifyUnitType(delivery) });
   }
 
   return records;
 }
 
-export async function extractTimetableCourses(file: File): Promise<ImportedCourse[]> {
+export async function extractTimetableUnits(file: File): Promise<ImportedUnit[]> {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
   const data = new Uint8Array(await file.arrayBuffer());
@@ -77,7 +77,7 @@ export async function extractTimetableCourses(file: File): Promise<ImportedCours
     text += " " + content.items.map((item) => ("str" in item ? item.str : "")).join(" ");
   }
 
-  const grouped = new Map<string, ImportedCourse>();
+  const grouped = new Map<string, ImportedUnit>();
 
   for (const record of extractCandidateRecords(normalizeText(text))) {
     const existing = grouped.get(record.code);
@@ -104,7 +104,7 @@ export async function extractTimetableCourses(file: File): Promise<ImportedCours
       code: record.code,
       name: existing.name.length >= record.name.length ? existing.name : record.name,
       delivery,
-      courseType: classifyCourseType(delivery),
+      unitType: classifyUnitType(delivery),
     });
   }
 
