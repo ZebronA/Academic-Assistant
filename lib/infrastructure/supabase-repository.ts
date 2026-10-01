@@ -40,13 +40,12 @@ export class SupabaseAcademicRepository implements AcademicRepository {
   async createAcademicPeriod(input: CreateAcademicPeriodInput) {
     await requireCurrentUser(this.client, input.userId);
     const { data, error } = await this.client
-      .from("academic_periods")
-      .insert({
-        user_id: input.userId,
-        name: input.name.trim(),
-        starts_on: input.startsOn,
-        ends_on: input.endsOn,
-        is_current: true,
+      .rpc("create_current_academic_period", {
+        p_name: input.name.trim(),
+        p_academic_year: input.academicYear.trim(),
+        p_semester: input.semester,
+        p_starts_on: input.startsOn,
+        p_ends_on: input.endsOn,
       })
       .select()
       .single();
