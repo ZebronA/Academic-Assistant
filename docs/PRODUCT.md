@@ -8,7 +8,7 @@ Its purpose is to maintain an accurate, evolving representation of a student's a
 
 ### Product description
 
-> An adaptive academic management system that tracks courses, coursework, deadlines, assessments, academic state, and study tasks to determine the highest-value next action for a student.
+> An adaptive academic management system that tracks units, coursework, deadlines, assessments, academic state, and study tasks to determine the highest-value next action for a student.
 
 The product is not primarily a timetable, a conventional to-do list, or an AI chatbot. Those are components or interfaces around the core system.
 
@@ -149,7 +149,7 @@ State describes the student's current academic condition.
 
 Examples:
 
-- course stability
+- unit stability
 - understanding
 - backlog
 - recency of practice
@@ -247,7 +247,7 @@ The system must not silently turn a derived conclusion into a source fact.
 
 Academic state is a current projection of the student's situation.
 
-Course state currently uses:
+Unit state currently uses:
 
 ```
 protected
@@ -306,8 +306,8 @@ Historical state changes must remain available.
 
 The system therefore maintains both:
 
-- current course state
-- course state history
+- current unit state
+- unit state history
 
 A change in state should not erase the evidence of how or why the state changed.
 
@@ -390,7 +390,7 @@ Tasks are concrete actions that can be completed.
 
 A task may contain:
 
-- course
+- unit
 - title
 - description
 - task type
@@ -428,7 +428,7 @@ Examples:
 
 Assessments should carry relevant information such as:
 
-- course
+- unit
 - type
 - status
 - start/due time
@@ -471,7 +471,7 @@ Study sessions are first-class evidence.
 
 A study session can record:
 
-- course
+- unit
 - task
 - start time
 - end time
@@ -541,7 +541,7 @@ The assistant must not:
 
 - invent deadlines
 - invent grades
-- invent course requirements
+- invent unit requirements
 - silently confirm uncertain information
 - declare mastery from study hours alone
 - overwrite historical evidence
@@ -611,7 +611,7 @@ The system should produce concrete next actions, not only summaries.
 
 ### Flexible
 
-The system should work with different schedules, courses, semesters, and academic structures.
+The system should work with different schedules, units, semesters, and academic structures.
 
 ### Non-destructive
 
@@ -633,7 +633,7 @@ The first useful version should establish:
 
 - user profile
 - academic periods
-- courses
+- units
 - timetable
 - tasks
 - assessments
@@ -641,7 +641,7 @@ The first useful version should establish:
 - academic events
 - observations
 - study sessions
-- course state
+- unit state
 - state history
 - deterministic priority
 - next useful action
