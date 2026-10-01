@@ -1,8 +1,9 @@
 import { DomainValidationError } from "@/lib/application/errors";
 import type { AcademicRepository } from "@/lib/application/ports";
 import type {
-  CompleteAssessmentInput, CompleteTaskInput, CreateAssessmentInput, CreateObservationInput,
-  CreateRecurringRequirementInput, CreateTaskInput, RecordAcademicEventInput, RecordStudySessionInput,
+  CompleteAssessmentInput, CompleteTaskInput, CreateAcademicPeriodInput, CreateAssessmentInput,
+  CreateCourseInput, CreateObservationInput, CreateRecurringRequirementInput, CreateTaskInput,
+  RecordAcademicEventInput, RecordStudySessionInput,
 } from "@/lib/domain/types";
 
 function requireText(value: string | null | undefined, field: string) {
@@ -14,6 +15,19 @@ function requirePositiveMinutes(value: number | null | undefined, field: string)
 }
 function requireIsoDate(value: string, field: string) {
   if (Number.isNaN(Date.parse(value))) throw new DomainValidationError(field + " must be a valid date");
+}
+
+export async function createAcademicPeriod(repo: AcademicRepository, input: CreateAcademicPeriodInput) {
+  requireText(input.userId, "userId"); requireText(input.name, "name");
+  requireIsoDate(input.startsOn, "startsOn"); requireIsoDate(input.endsOn, "endsOn");
+  if (Date.parse(input.endsOn) < Date.parse(input.startsOn)) throw new DomainValidationError("endsOn cannot be before startsOn");
+  return repo.createAcademicPeriod(input);
+}
+
+export async function createCourse(repo: AcademicRepository, input: CreateCourseInput) {
+  requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId");
+  requireText(input.code, "code"); requireText(input.name, "name");
+  return repo.createCourse(input);
 }
 
 export async function createTask(repo: AcademicRepository, input: CreateTaskInput) {
