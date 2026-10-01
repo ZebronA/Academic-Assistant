@@ -1,6 +1,6 @@
 import type { AcademicRepository } from "@/lib/application/ports";
 import type {
-  CreateAssessmentInput,
+  CreateAcademicPeriodInput, CreateAssessmentInput, CreateCourseInput,
   CreateObservationInput,
   CreateRecurringRequirementInput,
   CreateTaskInput,
@@ -25,6 +25,88 @@ async function requireCurrentUser(client: SupabaseClient, expectedUserId: string
 }
 
 export class SupabaseAcademicRepository implements AcademicRepository {
+  async getCurrentAcademicPeriod(userId: string) {
+    await requireCurrentUser(this.client, userId);
+    const { data, error } = await this.client
+      .from("academic_periods")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_current", true)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async createAcademicPeriod(input: CreateAcademicPeriodInput) {
+    await requireCurrentUser(this.client, input.userId);
+    const { data, error } = await this.client
+      .from("academic_periods")
+      .insert({
+        user_id: input.userId,
+        name: input.name.trim(),
+        starts_on: input.startsOn,
+        ends_on: input.endsOn,
+        is_current: true,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async listCourses(userId: string, academicPeriodId: string) {
+    await requireCurrentUser(this.client, userId);
+    const { data, error } = await this.client
+      .from("courses")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("academic_period_id", academicPeriodId)
+      .eq("is_active", true)
+      .order("code", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
+
+  async createCourse(input: CreateCourseInput) {
+    await requireCurrentUser(this.client, input.userId);
+    const { data, error } = await this.client
+      .from("courses")
+      .insert({
+        user_id: input.userId,
+        academic_period_id: input.academicPeriodId,
+        code: input.code.trim().toUpperCase(),
+        name: input.name.trim(),
+        course_type: input.courseType,
+      })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async listCourseStates(userId: string) {
+    await requireCurrentUser(this.client, userId);
+    const { data, error } = await this.client
+      .from("course_states")
+      .select("*")
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
+
+  async listUpcomingAssessments(userId: string, academicPeriodId: string) {
+    await requireCurrentUser(this.client, userId);
+    const { data, error } = await this.client
+      .from("assessments")
+      .select("*, courses!inner(code,name,academic_period_id)")
+      .eq("user_id", userId)
+      .eq("courses.academic_period_id", academicPeriodId)
+      .in("status", ["upcoming", "in_progress"])
+      .order("due_at", { ascending: true, nullsFirst: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
+
   async listOpenTasks(userId: string) {
     await requireCurrentUser(this.client, userId);
     const { data, error } = await this.client
