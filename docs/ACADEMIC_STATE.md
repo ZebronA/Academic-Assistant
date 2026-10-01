@@ -557,29 +557,13 @@ The exact transition rules must be implemented explicitly rather than left to th
 
 ## 16. Protected State Transitions
 
-`protected` remains part of the current five-state vocabulary, but its transition rules are intentionally not finalized.
+`protected` remains part of the current five-state vocabulary, but no transition rules are established yet.
 
-Protection may relate to preserving an important academic condition or maintenance pattern. A weekly requirement, online activity, assessment preparation need, or another recurring academic condition may provide a concrete reason for protection, but none of these examples defines the state by itself.
+The reviewed product discussion does not define what causes a course to enter or leave `protected`. It also does not establish that `protected` is equivalent to a gate, online requirement, deadline, timetable commitment, or maintenance condition.
 
-The current model therefore distinguishes the concept from any one implementation mechanism:
+Therefore the state engine must leave this concept unresolved until the domain is deliberately specified. Any future transition rules should be explicit, deterministic, evidence-based, and explainable.
 
-~~~
-protected
-≠
-online course
-
-protected
-≠
-assessment deadline
-
-protected
-≠
-timetable slot
-~~~
-
-The system should not manufacture transition rules until the domain meaning is sufficiently precise. When the rules are eventually defined, they should be deterministic, evidence-based, and explainable.
-
-A future refinement may still separate academic condition from protection/gate status if actual implementation demonstrates that one state value cannot represent the concepts cleanly. That remains an open design question rather than a decision to remove `protected` now.
+The relationship between `protected` and the other course-state values is also unresolved. Because the current database stores one `state` value, we should not assume that `protected` is a second independent dimension without a deliberate schema decision.
 
 ## 17. State Calculation
 
