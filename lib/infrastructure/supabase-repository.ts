@@ -46,9 +46,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
         p_semester: input.semester,
         p_starts_on: input.startsOn,
         p_ends_on: input.endsOn,
-      })
-      .select()
-      .single();
+      });
     if (error) throw new Error(error.message);
     return data;
   }
