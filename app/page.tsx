@@ -230,7 +230,7 @@ export default function Home() {
       setCourseName("");
       await loadAcademicData(userId);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not add course.");
+      setMessage(error instanceof Error ? error.message : "Could not add unit.");
     } finally {
       setBusy(false);
     }
@@ -916,7 +916,7 @@ export default function Home() {
 
                     {isSelected && !state && (
                       <div className="border-t border-zinc-800 bg-zinc-950/40 px-4 py-4 text-sm text-zinc-500 sm:px-5">
-                        No academic state has been derived for this course yet.
+                        No academic state has been derived for this unit yet.
                       </div>
                     )}
                   </div>
@@ -925,7 +925,7 @@ export default function Home() {
 
               {courses.length === 0 && (
                 <p className="p-6 text-sm text-zinc-500">
-                  No courses yet. Add your first course below.
+                  No units yet. Add your first unit below.
                 </p>
               )}
             </div>
@@ -937,7 +937,7 @@ export default function Home() {
           />
 
           <form onSubmit={addCourse} className={`${sectionClass()} mt-4`}>
-              <h3 className="font-medium">Add course</h3>
+              <h3 className="font-medium">Add unit</h3>
               <div className="mt-3 grid gap-3 md:grid-cols-[110px_1fr_150px_auto]">
                 <input
                   className={inputClass()}
@@ -992,7 +992,7 @@ export default function Home() {
                   >
                     <p className="text-sm font-medium">{assessment.title}</p>
                     <p className="mt-1 text-xs text-zinc-500">
-                      {assessment.courses?.code ?? "Course"} · {assessment.assessment_type}
+                      {assessment.courses?.code ?? "Unit"} · {assessment.assessment_type}
                     </p>
                     <p className="mt-1 text-xs text-zinc-600">
                       {dueLabel(assessment.due_at)}
@@ -1023,7 +1023,7 @@ export default function Home() {
                   onChange={(event) => setAssessmentCourseId(event.target.value)}
                   required
                 >
-                  <option value="">Choose course</option>
+                  <option value="">Choose unit</option>
                   {courses.map((course) => (
                     <option key={course.id} value={course.id}>
                       {course.code} · {course.name}
@@ -1094,7 +1094,7 @@ export default function Home() {
                   value={courseId}
                   onChange={(event) => setCourseId(event.target.value)}
                 >
-                  <option value="">No course</option>
+                  <option value="">No unit</option>
                   {courses.map((course) => (
                     <option key={course.id} value={course.id}>
                       {course.code} · {course.name}
@@ -1154,7 +1154,7 @@ export default function Home() {
                 onChange={(event) => setSessionCourseId(event.target.value)}
                 required
               >
-                <option value="">Choose course</option>
+                <option value="">Choose unit</option>
                 {courses.map((course) => (
                   <option key={course.id} value={course.id}>
                     {course.code} · {course.name}
@@ -1226,7 +1226,7 @@ export default function Home() {
                   </div>
 
                   <p className="mt-1 text-sm text-zinc-500">
-                    {task.course_id ? courseById.get(task.course_id)?.code ?? "Course" : "General"} ·{" "}
+                    {task.course_id ? courseById.get(task.course_id)?.code ?? "Unit" : "General"} ·{" "}
                     {task.task_type}
                     {task.estimated_minutes ? ` · ${task.estimated_minutes} min` : ""}
                   </p>
