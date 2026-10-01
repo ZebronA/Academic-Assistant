@@ -771,7 +771,7 @@ export default function Home() {
                           if (window.confirm("Remove this course from the current semester? Existing academic records will be preserved.")) {
                             void removeCourse(course.id);
                           }
-                        }
+                        }}
                         disabled={busy}
                         className="rounded-xl border border-red-900/60 px-4 py-2 text-sm text-red-300 hover:bg-red-950/30 disabled:opacity-50"
                       >
