@@ -191,6 +191,18 @@ Current states:
 - weak
 - critical
 
+### Protected state
+
+`protected` is intentionally retained as part of the current course-state vocabulary.
+
+It should not be defined simply as an online-course state, a timetable condition, or an assessment/deadline flag. Those are possible contexts in which protection may matter, but they do not define the concept.
+
+Working interpretation:
+
+> Protected indicates that an important academic condition or maintenance pattern should be deliberately preserved from being displaced or neglected.
+
+The exact evidence and transition rules for entering or leaving `protected` are not finalized yet. The application must not invent those rules or silently redefine `protected` around a single use case.
+
 Supporting attributes currently include:
 
 - understanding level, 0–5
