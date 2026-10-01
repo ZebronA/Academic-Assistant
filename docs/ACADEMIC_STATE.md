@@ -6,7 +6,7 @@ This document defines how Academic Assistant represents and updates a student's 
 
 It answers:
 
-> Given the academic information currently known, what is the condition of each course, what evidence supports that condition, and what should the system remain uncertain about?
+> Given the academic information currently known, what is the condition of each unit, what evidence supports that condition, and what should the system remain uncertain about?
 
 The state model is the foundation for the priority engine.
 
@@ -17,7 +17,7 @@ Evidence
       ↓
 State Interpretation
       ↓
-Current Course State
+Current Unit State
       ↓
 Priority Engine
 ~~~
@@ -46,7 +46,7 @@ It combines signals such as:
 
 The state engine should answer:
 
-1. Is this course currently protected by an active academic gate?
+1. Is this unit currently protected by an active academic gate?
 2. Is required work being kept up with?
 3. Is there unresolved backlog?
 4. Is there recent evidence of competence?
@@ -92,7 +92,7 @@ Historical state changes remain in course_state_history.
 
 ## 4. State Vocabulary
 
-The current course-state vocabulary is:
+The current unit-state vocabulary is:
 
 - protected
 - stable
@@ -110,32 +110,32 @@ Protection is different from urgency and different from academic weakness.
 
 Examples can include a recurring requirement whose continuity matters or a maintenance activity that should not repeatedly lose out to short-term deadlines. An online requirement can be protected, but "online" is not the definition of protected.
 
-For the MVP, the state engine treats `protected` as a deliberate preservation signal. It should not automatically be assigned merely because a course is online, has a deadline, or has an assessment.
+For the MVP, the state engine treats `protected` as a deliberate preservation signal. It should not automatically be assigned merely because a unit is online, has a deadline, or has an assessment.
 
 The transition rules remain intentionally conservative and explicit. The engine must be able to explain what condition is being protected and why.
 
 ### 4.2 Stable
 
-A course is stable when:
+A unit is stable when:
 
 - required work is substantially synchronized
 - there is no significant unresolved backlog
-- there is sufficient recent evidence for the course's learning mode
+- there is sufficient recent evidence for the unit's learning mode
 - there is no immediate academic gate creating exceptional pressure
 
 Stable does not mean mastered.
 
-It means the course is currently being maintained without a major warning signal.
+It means the unit is currently being maintained without a major warning signal.
 
 ### 4.3 Cooling
 
-A course is cooling when its current evidence is becoming stale or maintenance is being neglected, but the situation has not yet become a substantial weakness.
+A unit is cooling when its current evidence is becoming stale or maintenance is being neglected, but the situation has not yet become a substantial weakness.
 
 Typical signals:
 
 - practice recency is declining
 - no recent evidence of competence
-- the course is being repeatedly deferred
+- the unit is being repeatedly deferred
 - maintenance has fallen below the expected floor
 - an assessment is approaching without enough recent evidence
 
@@ -143,7 +143,7 @@ Cooling is a warning state.
 
 ### 4.4 Weak
 
-A course is weak when there is meaningful evidence of an academic deficiency.
+A unit is weak when there is meaningful evidence of an academic deficiency.
 
 Examples:
 
@@ -158,7 +158,7 @@ Weakness should be tied to observable evidence rather than simply low confidence
 
 ### 4.5 Critical
 
-A course is critical when an unresolved problem poses an immediate or severe academic risk.
+A unit is critical when an unresolved problem poses an immediate or severe academic risk.
 
 Examples:
 
@@ -173,17 +173,17 @@ It should not become a routine synonym for "important."
 
 ## 5. Protected Is Different From Strong
 
-A protected course may be academically healthy.
+A protected unit may be academically healthy.
 
 For example:
 
 ~~~
 CILS
 weekly quiz due soon
-course understanding is fine
+unit understanding is fine
 ~~~
 
-The course can be protected without being weak.
+The unit can be protected without being weak.
 
 This distinction prevents the system from confusing urgency with academic deficiency.
 
@@ -281,7 +281,7 @@ The implementation should preserve provenance and use it when determining how co
 
 ## 8. Understanding Evidence
 
-Understanding should be evaluated according to the course's learning characteristics.
+Understanding should be evaluated according to the unit's learning characteristics.
 
 The system should not use one universal test.
 
@@ -344,7 +344,7 @@ Useful evidence:
 - applies concepts to problems
 - answers assessment-style questions
 
-### Online Courses
+### Online Units
 
 Useful evidence includes:
 
@@ -353,7 +353,7 @@ Useful evidence includes:
 - completing quizzes before their deadlines
 - demonstrating retention where later assessments depend on prior material
 
-These course-specific examples are initial evidence definitions, not permanent hard-coded rules.
+These unit-specific examples are initial evidence definitions, not permanent hard-coded rules.
 
 ## 9. Understanding Level
 
@@ -396,7 +396,7 @@ Future assignment
 Backlog
 ~~~
 
-Backlog should be attached to the relevant course/task/obligation whenever possible.
+Backlog should be attached to the relevant unit/task/obligation whenever possible.
 
 ## 11. Recency
 
@@ -422,13 +422,13 @@ Both matter.
 
 ## 12. Maintenance Floor
 
-Courses should have a flexible maintenance floor rather than a rigid universal study quota.
+Units should have a flexible maintenance floor rather than a rigid universal study quota.
 
 The purpose of maintenance is to prevent important skills or concepts from becoming stale.
 
 The maintenance floor may depend on:
 
-- course type
+- unit type
 - current understanding
 - assessment proximity
 - recent performance
@@ -456,7 +456,7 @@ It increases when:
 - evidence of readiness is weak
 - prerequisite work is unresolved
 
-Assessment pressure should not automatically mean the course becomes weak.
+Assessment pressure should not automatically mean the unit becomes weak.
 
 For example:
 
@@ -537,7 +537,7 @@ Possible causes:
 
 Possible causes:
 
-- weak course plus imminent major assessment
+- weak unit plus imminent major assessment
 - severe unresolved obligation
 - multiple simultaneous severe signals
 
@@ -553,7 +553,7 @@ The exact transition rules must be implemented explicitly rather than left to th
 
 ## 16. Protected State Transitions
 
-For the MVP, a course can be placed in `protected` when there is a confirmed, important condition that needs deliberate preservation and would otherwise be at meaningful risk of being displaced by competing work.
+For the MVP, a unit can be placed in `protected` when there is a confirmed, important condition that needs deliberate preservation and would otherwise be at meaningful risk of being displaced by competing work.
 
 Examples include:
 
@@ -563,7 +563,7 @@ Examples include:
 
 The engine must not infer protection from delivery mode alone.
 
-Leaving `protected` should occur when the protected condition is resolved, no longer relevant, or the course's current condition is better represented by another state.
+Leaving `protected` should occur when the protected condition is resolved, no longer relevant, or the unit's current condition is better represented by another state.
 
 These rules are intentionally conservative. The MVP should prefer an explainable protection decision over frequent automatic transitions.
 
@@ -693,7 +693,7 @@ The following issues remain intentionally unresolved.
 
 What concrete evidence and transition rules should determine `protected`?
 
-The current model intentionally retains `protected` in the course-state vocabulary while leaving its exact semantics open for deliberate refinement. A future design may separate:
+The current model intentionally retains `protected` in the unit-state vocabulary while leaving its exact semantics open for deliberate refinement. A future design may separate:
 
 ~~~
 academic_condition
@@ -707,11 +707,11 @@ protection / gate status
 
 if actual implementation demonstrates that one state value cannot represent both concepts cleanly.
 
-This is not yet a decision to remove `protected`, and online-course protection is not its definition.
+This is not yet a decision to remove `protected`, and online-unit protection is not its definition.
 
 ### B. Recency thresholds
 
-Exact time thresholds should be defined by course characteristics and academic context rather than arbitrary universal values.
+Exact time thresholds should be defined by unit characteristics and academic context rather than arbitrary universal values.
 
 ### C. Evidence references
 
@@ -725,9 +725,9 @@ Assessment results are not yet represented as a dedicated evidence/result entity
 
 The current database does not yet have a dedicated availability model.
 
-### F. Course learning characteristics
+### F. Unit learning characteristics
 
-Course type is currently broad. A richer learning/assessment profile may eventually be necessary.
+Unit type is currently broad. A richer learning/assessment profile may eventually be necessary.
 
 These are design questions, not implementation bugs. They should be resolved deliberately.
 
@@ -740,7 +740,7 @@ The priority engine determines what to do about that condition.
 For example:
 
 ~~~
-Course state:
+Unit state:
 weak
 
 Assessment:
