@@ -91,7 +91,7 @@ export default function Home() {
   async function signIn(event: FormEvent) {
     event.preventDefault(); setBusy(true); setMessage("");
     const { error } = await client.auth.signInWithOtp({
-      email: email.trim(), options: { emailRedirectTo: window.location.origin },
+      email: email.trim(), options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
     setMessage(error ? error.message : "Check your email for the sign-in link.");
     setBusy(false);
