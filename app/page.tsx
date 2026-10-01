@@ -250,7 +250,7 @@ export default function Home() {
 
   async function saveCourseEdit(event: FormEvent) {
     event.preventDefault();
-    if (!userId || !editingCourseId) return;
+    if (!userId || !period || !editingCourseId) return;
 
     setBusy(true);
     setMessage("");
@@ -258,6 +258,7 @@ export default function Home() {
     try {
       await updateCourse(repository, {
         userId,
+        academicPeriodId: period.id,
         courseId: editingCourseId,
         code: editingCourseCode,
         name: editingCourseName,
@@ -274,7 +275,7 @@ export default function Home() {
   }
 
   async function removeCourse(id: string) {
-    if (!userId) return;
+    if (!userId || !period) return;
     const course = courses.find((item) => item.id === id);
     if (!course) return;
     if (!window.confirm(`Remove ${course.code} from this academic period? Existing academic records will be preserved.`)) return;
@@ -283,7 +284,7 @@ export default function Home() {
     setMessage("");
 
     try {
-      await archiveCourse(repository, { userId, courseId: id });
+      await archiveCourse(repository, { userId, academicPeriodId: period.id, courseId: id });
       if (editingCourseId === id) cancelEditingCourse();
       setMessage("Course removed from the active course list. Existing records were preserved.");
       await loadAcademicData(userId);
@@ -721,9 +722,9 @@ export default function Home() {
                   <form
                     key={course.id}
                     onSubmit={saveCourseEdit}
-                    className="rounded-2xl border border-zinc-700 bg-zinc-900/70 p-5"
+                    className="rounded-2xl border border-zinc-700 bg-zinc-900/70 p-5 sm:p-6"
                   >
-                    <div className="grid gap-3 md:grid-cols-[120px_1fr_160px]">
+                    <div className="grid gap-3 sm:grid-cols-[minmax(110px,140px)_minmax(0,1fr)] lg:grid-cols-[minmax(110px,140px)_minmax(0,1fr)_160px]">
                       <input
                         className={inputClass()}
                         value={editingCourseCode}
@@ -748,7 +749,7 @@ export default function Home() {
                         )}
                       </select>
                     </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                       <button
                         type="submit"
                         disabled={busy}
@@ -766,9 +767,13 @@ export default function Home() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => void removeCourse(course.id)}
+                        onClick={() => {
+                          if (window.confirm("Remove this course from the current semester? Existing academic records will be preserved.")) {
+                            void removeCourse(course.id);
+                          }
+                        }
                         disabled={busy}
-                        className="rounded-xl border border-zinc-700 px-4 py-2 text-sm text-zinc-400 hover:text-white disabled:opacity-50"
+                        className="rounded-xl border border-red-900/60 px-4 py-2 text-sm text-red-300 hover:bg-red-950/30 disabled:opacity-50"
                       >
                         Remove course
                       </button>

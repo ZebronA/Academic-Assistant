@@ -1,5 +1,5 @@
 import type {
-  CreateAcademicPeriodInput,
+  CreateAcademicPeriodInput, UpdateCourseInput,
   CreateAssessmentInput, CreateCourseInput, CreateObservationInput, CreateRecurringRequirementInput,
   CreateTaskInput, RecordAcademicEventInput, RecordStudySessionInput,
 } from "@/lib/domain/types";
@@ -9,8 +9,8 @@ export interface AcademicRepository {
   createAcademicPeriod(input: CreateAcademicPeriodInput): Promise<unknown>;
   listCourses(userId: string, academicPeriodId: string): Promise<unknown[]>;
   createCourse(input: CreateCourseInput): Promise<unknown>;
-  updateCourse(input: { userId: string; courseId: string; code: string; name: string; courseType: CreateCourseInput['courseType'] }): Promise<unknown>;
-  archiveCourse(userId: string, courseId: string): Promise<unknown>;
+  updateCourse(input: UpdateCourseInput): Promise<unknown>;
+  archiveCourse(userId: string, academicPeriodId: string, courseId: string): Promise<unknown>;
   listCourseStates(userId: string): Promise<unknown[]>;
   listUpcomingAssessments(userId: string, academicPeriodId: string): Promise<unknown[]>;
   listOpenTasks(userId: string): Promise<unknown[]>;

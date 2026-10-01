@@ -1,6 +1,6 @@
 import type { AcademicRepository } from "@/lib/application/ports";
 import type {
-  CreateAcademicPeriodInput, CreateAssessmentInput, CreateCourseInput,
+  CreateAcademicPeriodInput, CreateAssessmentInput, CreateCourseInput, UpdateCourseInput,
   CreateObservationInput,
   CreateRecurringRequirementInput,
   CreateTaskInput,
@@ -81,7 +81,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
     return data;
   }
 
-  async updateCourse(input: { userId: string; courseId: string; code: string; name: string; courseType: CreateCourseInput["courseType"] }) {
+  async updateCourse(input: UpdateCourseInput) {
     await requireCurrentUser(this.client, input.userId);
     const { data, error } = await this.client
       .from("courses")
@@ -92,22 +92,31 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       })
       .eq("id", input.courseId)
       .eq("user_id", input.userId)
+      .eq("academic_period_id", input.academicPeriodId)
+      .eq("is_active", true)
       .select()
-      .single();
-    if (error) throw new Error(error.message);
+      .maybeSingle();
+    if (error) {
+      if (error.code === "23505") throw new Error("A course with this code already exists in this semester.");
+      throw new Error(error.message);
+    }
+    if (!data) throw new NotFoundError("Course not found in the current academic period");
     return data;
   }
 
-  async archiveCourse(userId: string, courseId: string) {
+  async archiveCourse(userId: string, academicPeriodId: string, courseId: string) {
     await requireCurrentUser(this.client, userId);
     const { data, error } = await this.client
       .from("courses")
       .update({ is_active: false })
       .eq("id", courseId)
       .eq("user_id", userId)
+      .eq("academic_period_id", academicPeriodId)
+      .eq("is_active", true)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw new Error(error.message);
+    if (!data) throw new NotFoundError("Course not found in the current academic period");
     return data;
   }
 

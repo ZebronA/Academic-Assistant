@@ -2,9 +2,13 @@ import { DomainValidationError } from "@/lib/application/errors";
 import type { AcademicRepository } from "@/lib/application/ports";
 import type {
   CompleteAssessmentInput, CompleteTaskInput, CreateAcademicPeriodInput, CreateAssessmentInput,
-  CreateCourseInput, CreateObservationInput, CreateRecurringRequirementInput, CreateTaskInput,
+  CreateCourseInput, UpdateCourseInput, CreateObservationInput, CreateRecurringRequirementInput, CreateTaskInput,
   RecordAcademicEventInput, RecordStudySessionInput,
 } from "@/lib/domain/types";
+
+function normalizeCourseCode(value: string) {
+  return value.trim().replace(/\s+/g, " ").toUpperCase();
+}
 
 function requireText(value: string | null | undefined, field: string) {
   if (!value?.trim()) throw new DomainValidationError(field + " is required");
@@ -28,24 +32,24 @@ export async function createAcademicPeriod(repo: AcademicRepository, input: Crea
 export async function createCourse(repo: AcademicRepository, input: CreateCourseInput) {
   requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId");
   requireText(input.code, "code"); requireText(input.name, "name");
-  return repo.createCourse(input);
+  return repo.createCourse({ ...input, code: normalizeCourseCode(input.code) });
 }
 
 export async function updateCourse(
   repo: AcademicRepository,
-  input: { userId: string; courseId: string; code: string; name: string; courseType: CreateCourseInput["courseType"] },
+  input: UpdateCourseInput,
 ) {
-  requireText(input.userId, "userId"); requireText(input.courseId, "courseId");
+  requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId"); requireText(input.courseId, "courseId");
   requireText(input.code, "code"); requireText(input.name, "name");
-  return repo.updateCourse(input);
+  return repo.updateCourse({ ...input, code: normalizeCourseCode(input.code) });
 }
 
 export async function archiveCourse(
   repo: AcademicRepository,
-  input: { userId: string; courseId: string },
+  input: { userId: string; academicPeriodId: string; courseId: string },
 ) {
-  requireText(input.userId, "userId"); requireText(input.courseId, "courseId");
-  return repo.archiveCourse(input.userId, input.courseId);
+  requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId"); requireText(input.courseId, "courseId");
+  return repo.archiveCourse(input.userId, input.academicPeriodId, input.courseId);
 }
 
 export async function createTask(repo: AcademicRepository, input: CreateTaskInput) {
