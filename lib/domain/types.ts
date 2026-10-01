@@ -15,12 +15,23 @@ export interface CreateAcademicPeriodInput {
   endsOn: string;
 }
 
+export type CourseType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
+
 export interface CreateCourseInput {
   userId: string;
   academicPeriodId: string;
   code: string;
   name: string;
-  courseType: "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
+  courseType: CourseType;
+}
+
+export interface UpdateCourseInput {
+  userId: string;
+  academicPeriodId: string;
+  courseId: string;
+  code: string;
+  name: string;
+  courseType: CourseType;
 }
 
 export interface CreateTaskInput {
