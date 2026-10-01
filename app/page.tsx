@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { SupabaseAcademicRepository } from "@/lib/infrastructure/supabase-repository";
 import { createAcademicPeriod, createCourse, createTask, completeTask } from "@/lib/application/commands";
+import { calculateNextAction } from "@/lib/domain/priority-engine";
+import type { CourseState } from "@/lib/domain/types";
 
 type Period = { id: string; name: string; starts_on: string; ends_on: string };
 type CourseType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
@@ -140,17 +142,35 @@ export default function Home() {
 
   const nextAction = useMemo(() => {
     const candidates = [
-      ...tasks.map((task) => ({ kind: "task" as const, item: task, due: task.due_at, course: task.course_id ? courseById.get(task.course_id) : undefined })),
-      ...assessments.map((assessment) => ({ kind: "assessment" as const, item: assessment, due: assessment.due_at, course: courseById.get(assessment.course_id) })),
+      ...tasks.map((task) => {
+        const state = task.course_id ? stateByCourse.get(task.course_id) : undefined;
+        return {
+          id: task.id,
+          kind: "task" as const,
+          title: task.title,
+          courseId: task.course_id,
+          dueAt: task.due_at,
+          estimatedMinutes: task.estimated_minutes,
+          state: (state?.state as CourseState | undefined) ?? null,
+          backlog: state?.backlog ?? false,
+        };
+      }),
+      ...assessments.map((assessment) => {
+        const state = stateByCourse.get(assessment.course_id);
+        return {
+          id: assessment.id,
+          kind: "assessment" as const,
+          title: assessment.title,
+          courseId: assessment.course_id,
+          dueAt: assessment.due_at,
+          estimatedMinutes: null,
+          state: (state?.state as CourseState | undefined) ?? null,
+          backlog: state?.backlog ?? false,
+        };
+      }),
     ];
-    return candidates.map((candidate) => {
-      const days = daysUntil(candidate.due);
-      const state = candidate.course ? stateByCourse.get(candidate.course.id)?.state : null;
-      const urgency = days == null ? 0 : days <= 0 ? 100 : days <= 1 ? 90 : days <= 3 ? 70 : days <= 7 ? 45 : 10;
-      const stateBoost = state === "critical" ? 35 : state === "weak" ? 25 : state === "cooling" ? 15 : state === "protected" ? 10 : 0;
-      return { ...candidate, score: urgency + stateBoost, days };
-    }).sort((a, b) => b.score - a.score)[0] ?? null;
-  }, [tasks, assessments, courseById, stateByCourse]);
+    return calculateNextAction(candidates);
+  }, [tasks, assessments, stateByCourse]);
 
   if (!userId) return (
     <main className="min-h-screen bg-zinc-950 px-6 py-16 text-zinc-100"><div className="mx-auto max-w-md">
@@ -183,7 +203,7 @@ export default function Home() {
 
       <section className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
         <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Next action</p>
-        {nextAction ? <div className="mt-3"><h2 className="text-2xl font-semibold">{nextAction.item.title}</h2><p className="mt-2 text-zinc-400">{nextAction.course ? nextAction.course.code + " · " + nextAction.course.name : "Academic work"}{nextAction.days != null ? " · " + (nextAction.days <= 0 ? "due now" : "due in " + nextAction.days + " day" + (nextAction.days === 1 ? "" : "s")) : ""}</p><p className="mt-3 text-sm text-zinc-500">Selected from current open work using deadline pressure and current course-state signals. This is deterministic MVP logic, not an AI judgment.</p></div> : <p className="mt-3 text-zinc-400">No actionable academic work is recorded yet.</p>}
+        {nextAction ? <div className="mt-3"><h2 className="text-2xl font-semibold">{nextAction.item.title}</h2><p className="mt-2 text-zinc-400">{nextAction.course ? nextAction.course.code + " · " + nextAction.course.name : "Academic work"}{nextAction.days != null ? " · " + (nextAction.days <= 0 ? "due now" : "due in " + nextAction.days + " day" + (nextAction.days === 1 ? "" : "s")) : ""}</p><div className="mt-3 space-y-2"><p className="text-sm text-zinc-400">{nextAction.reason}</p><ul className="space-y-1 text-xs text-zinc-500">{nextAction.factors.map((factor) => <li key={factor}>• {factor}</li>)}</ul><p className="pt-1 text-xs text-zinc-600">Deterministic MVP decision from recorded academic data; not an AI judgment.</p></div></div> : <p className="mt-3 text-zinc-400">No actionable academic work is recorded yet.</p>}
       </section>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.3fr_.7fr]"><section>
