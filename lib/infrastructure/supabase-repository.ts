@@ -1,6 +1,6 @@
 import type { AcademicRepository } from "@/lib/application/ports";
 import type {
-  CreateAcademicPeriodInput, CreateAssessmentInput, CreateCourseInput, UpdateCourseInput,
+  CreateAcademicPeriodInput, CreateAssessmentInput, CreateUnitInput, UpdateUnitInput,
   CreateObservationInput,
   CreateRecurringRequirementInput,
   CreateTaskInput,
@@ -51,7 +51,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
     return data;
   }
 
-  async listCourses(userId: string, academicPeriodId: string) {
+  async listUnits(userId: string, academicPeriodId: string) {
     await requireCurrentUser(this.client, userId);
     const { data, error } = await this.client
       .from("courses")
@@ -64,7 +64,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
     return data ?? [];
   }
 
-  async createCourse(input: CreateCourseInput) {
+  async createUnit(input: CreateUnitInput) {
     await requireCurrentUser(this.client, input.userId);
     const { data, error } = await this.client
       .from("courses")
@@ -73,7 +73,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
         academic_period_id: input.academicPeriodId,
         code: input.code.trim().toUpperCase(),
         name: input.name.trim(),
-        course_type: input.courseType,
+        course_type: input.unitType,
       })
       .select()
       .single();
@@ -81,46 +81,46 @@ export class SupabaseAcademicRepository implements AcademicRepository {
     return data;
   }
 
-  async updateCourse(input: UpdateCourseInput) {
+  async updateUnit(input: UpdateUnitInput) {
     await requireCurrentUser(this.client, input.userId);
     const { data, error } = await this.client
       .from("courses")
       .update({
         code: input.code.trim().toUpperCase(),
         name: input.name.trim(),
-        course_type: input.courseType,
+        course_type: input.unitType,
       })
-      .eq("id", input.courseId)
+      .eq("id", input.unitId)
       .eq("user_id", input.userId)
       .eq("academic_period_id", input.academicPeriodId)
       .eq("is_active", true)
       .select()
       .maybeSingle();
     if (error) {
-      if (error.code === "23505") throw new Error("A course with this code already exists in this semester.");
+      if (error.code === "23505") throw new Error("A unit with this code already exists in this semester.");
       throw new Error(error.message);
     }
-    if (!data) throw new NotFoundError("Course not found in the current academic period");
+    if (!data) throw new NotFoundError("Unit not found in the current academic period");
     return data;
   }
 
-  async archiveCourse(userId: string, academicPeriodId: string, courseId: string) {
+  async archiveUnit(userId: string, academicPeriodId: string, unitId: string) {
     await requireCurrentUser(this.client, userId);
     const { data, error } = await this.client
       .from("courses")
       .update({ is_active: false })
-      .eq("id", courseId)
+      .eq("id", unitId)
       .eq("user_id", userId)
       .eq("academic_period_id", academicPeriodId)
       .eq("is_active", true)
       .select()
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!data) throw new NotFoundError("Course not found in the current academic period");
+    if (!data) throw new NotFoundError("Unit not found in the current academic period");
     return data;
   }
 
-  async listCourseStates(userId: string) {
+  async listUnitStates(userId: string) {
     await requireCurrentUser(this.client, userId);
     const { data, error } = await this.client
       .from("course_states")
@@ -164,7 +164,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .from("tasks")
       .insert({
         user_id: input.userId,
-        course_id: input.courseId ?? null,
+        course_id: input.unitId ?? null,
         recurring_requirement_id: input.recurringRequirementId ?? null,
         title: input.title.trim(),
         description: input.description?.trim() || null,
@@ -204,7 +204,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .from("assessments")
       .insert({
         user_id: input.userId,
-        course_id: input.courseId,
+        course_id: input.unitId,
         title: input.title.trim(),
         assessment_type: input.assessmentType,
         starts_at: input.startsAt ?? null,
@@ -243,7 +243,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .from("observations")
       .insert({
         user_id: input.userId,
-        course_id: input.courseId ?? null,
+        course_id: input.unitId ?? null,
         task_id: input.taskId ?? null,
         assessment_id: input.assessmentId ?? null,
         content: input.content.trim(),
@@ -266,7 +266,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .from("study_sessions")
       .insert({
         user_id: input.userId,
-        course_id: input.courseId ?? null,
+        course_id: input.unitId ?? null,
         task_id: input.taskId ?? null,
         started_at: input.startedAt,
         ended_at: input.endedAt,
@@ -289,7 +289,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .from("academic_events")
       .insert({
         user_id: input.userId,
-        course_id: input.courseId ?? null,
+        course_id: input.unitId ?? null,
         task_id: input.taskId ?? null,
         assessment_id: input.assessmentId ?? null,
         event_type: input.eventType,
@@ -315,7 +315,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
       .from("recurring_requirements")
       .insert({
         user_id: input.userId,
-        course_id: input.courseId,
+        course_id: input.unitId,
         title: input.title.trim(),
         description: input.description?.trim() || null,
         frequency: input.frequency,
