@@ -41,8 +41,8 @@ export function TimetableImport({
       setCourses(extracted);
       setMessage(
         extracted.length
-          ? "Review the detected courses before importing them."
-          : "No course codes were detected. Try a clearer timetable PDF.",
+          ? "Review the detected units before importing them."
+          : "No unit codes were detected. Try a clearer timetable PDF.",
       );
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not read the timetable.");
@@ -100,12 +100,12 @@ export function TimetableImport({
       setFile(null);
       setMessage(
         skipped.length
-          ? `Imported ${imported.length} course${imported.length === 1 ? "" : "s"}; skipped ${skipped.length} already existing: ${skipped.join(", ")}.`
-          : `Imported ${imported.length} courses. The timetable was used only to establish course information.`,
+          ? `Imported ${imported.length} unit${imported.length === 1 ? "" : "s"}; skipped ${skipped.length} already existing: ${skipped.join(", ")}.`
+          : `Imported ${imported.length} units. The timetable was used only to establish unit information.`,
       );
       await onImported();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not import the courses.");
+      setMessage(error instanceof Error ? error.message : "Could not import the units.");
     } finally {
       setBusy(false);
     }
@@ -114,10 +114,10 @@ export function TimetableImport({
   return (
     <section className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Course setup</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Unit setup</p>
         <h2 className="mt-2 text-xl font-semibold">Import from timetable</h2>
         <p className="mt-2 text-sm leading-6 text-zinc-500">
-          The timetable is used to discover courses and delivery information. It does not establish
+          The timetable is used to discover units and delivery information. It does not establish
           attendance, completion, deadlines, academic state, or what actually happened.
         </p>
       </div>
@@ -154,7 +154,7 @@ export function TimetableImport({
         <div className="mt-6">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h3 className="font-medium">Review detected courses</h3>
+              <h3 className="font-medium">Review detected units</h3>
               <p className="mt-1 text-xs text-zinc-600">
                 Correct anything the PDF reader misunderstood before saving.
               </p>
@@ -169,13 +169,13 @@ export function TimetableImport({
                   className={inputClass()}
                   value={course.code}
                   onChange={(event) => updateCourse(index, { code: event.target.value.toUpperCase() })}
-                  aria-label={"Course code " + (index + 1)}
+                  aria-label={"Unit code " + (index + 1)}
                 />
                 <input
                   className={inputClass()}
                   value={course.name}
                   onChange={(event) => updateCourse(index, { name: event.target.value })}
-                  aria-label={"Course name " + (index + 1)}
+                  aria-label={"Unit name " + (index + 1)}
                 />
                 <select
                   className={inputClass()}
@@ -209,7 +209,7 @@ export function TimetableImport({
             disabled={busy}
             className="mt-4 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-zinc-950 disabled:opacity-50"
           >
-            {busy ? "Importing..." : "Confirm and import " + courses.length + " courses"}
+            {busy ? "Importing..." : "Confirm and import " + courses.length + " units"}
           </button>
         </div>
       )}
