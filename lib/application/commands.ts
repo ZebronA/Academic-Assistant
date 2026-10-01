@@ -6,7 +6,7 @@ import type {
   RecordAcademicEventInput, RecordStudySessionInput,
 } from "@/lib/domain/types";
 
-function normalizeCourseCode(value: string) {
+function normalizeUnitCode(value: string) {
   return value.trim().replace(/\s+/g, " ").toUpperCase();
 }
 
@@ -32,7 +32,7 @@ export async function createAcademicPeriod(repo: AcademicRepository, input: Crea
 export async function createUnit(repo: AcademicRepository, input: CreateUnitInput) {
   requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId");
   requireText(input.code, "code"); requireText(input.name, "name");
-  return repo.createUnit({ ...input, code: normalizeCourseCode(input.code) });
+  return repo.createUnit({ ...input, code: normalizeUnitCode(input.code) });
 }
 
 export async function updateUnit(
@@ -41,7 +41,7 @@ export async function updateUnit(
 ) {
   requireText(input.userId, "userId"); requireText(input.academicPeriodId, "academicPeriodId"); requireText(input.unitId, "unitId");
   requireText(input.code, "code"); requireText(input.name, "name");
-  return repo.updateUnit({ ...input, code: normalizeCourseCode(input.code) });
+  return repo.updateUnit({ ...input, code: normalizeUnitCode(input.code) });
 }
 
 export async function archiveUnit(
