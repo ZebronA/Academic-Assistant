@@ -5,6 +5,8 @@ export type AssessmentStatus = "upcoming" | "in_progress" | "completed" | "misse
 export type AssessmentType = "quiz" | "cat" | "exam" | "assignment" | "practical" | "other";
 export type Source = "user" | "assistant" | "system" | "imported" | "university";
 export type ConfirmationStatus = "proposed" | "confirmed" | "rejected";
+export type JsonValue = string | number | boolean | null | { [key: string]: JsonValue | undefined } | JsonValue[];
+export type JsonObject = { [key: string]: JsonValue | undefined };
 
 export interface CreateAcademicPeriodInput {
   userId: string;
@@ -59,10 +61,10 @@ export interface RecordAcademicEventInput {
   userId: string; unitId?: string | null; taskId?: string | null; assessmentId?: string | null;
   eventType: string; occurredAt?: string; title?: string | null; notes?: string | null;
   source: Source; confirmationStatus: ConfirmationStatus; durationMinutes?: number | null;
-  metadata?: Record<string, unknown>;
+  metadata?: JsonObject;
 }
 export interface CreateRecurringRequirementInput {
   userId: string; unitId: string; title: string; description?: string | null;
   frequency: "daily" | "weekly" | "monthly" | "custom";
-  startsOn: string; endsOn?: string | null; configuration?: Record<string, unknown>; source: Source;
+  startsOn: string; endsOn?: string | null; configuration?: JsonObject; source: Source;
 }
