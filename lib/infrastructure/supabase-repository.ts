@@ -98,7 +98,7 @@ export class SupabaseAcademicRepository implements AcademicRepository {
     await requireCurrentUser(this.client, userId);
     const { data, error } = await this.client
       .from("assessments")
-      .select("*, courses!inner(code,name,academic_period_id)")
+      .select("*, courses!assessments_course_id_fkey(code,name,academic_period_id)")
       .eq("user_id", userId)
       .eq("courses.academic_period_id", academicPeriodId)
       .in("status", ["upcoming", "in_progress"])
