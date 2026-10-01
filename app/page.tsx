@@ -6,7 +6,8 @@ import { SupabaseAcademicRepository } from "@/lib/infrastructure/supabase-reposi
 import { createAcademicPeriod, createCourse, createTask, completeTask } from "@/lib/application/commands";
 
 type Period = { id: string; name: string; starts_on: string; ends_on: string };
-type Course = { id: string; code: string; name: string; course_type: string };
+type CourseType = "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
+type Course = { id: string; code: string; name: string; course_type: CourseType };
 type State = { course_id: string; state: string; backlog: boolean; understanding_level: number | null; state_reason: string | null };
 type Task = { id: string; title: string; course_id: string | null; task_type: string; estimated_minutes: number | null; due_at: string | null; status: string };
 type Assessment = { id: string; title: string; course_id: string; assessment_type: string; due_at: string | null; weight_percent: number | null; courses?: { code: string; name: string } };
@@ -40,7 +41,7 @@ export default function Home() {
   const [periodEnd, setPeriodEnd] = useState("2026-12-31");
   const [courseCode, setCourseCode] = useState("");
   const [courseName, setCourseName] = useState("");
-  const [courseType, setCourseType] = useState("mixed");
+  const [courseType, setCourseType] = useState<CourseType>("mixed");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
