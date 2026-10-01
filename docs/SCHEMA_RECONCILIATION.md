@@ -14,13 +14,19 @@ All listed tables currently have RLS enabled.
 
 ## Findings
 
-### 1. Course condition and protection are mixed
+### 1. Protected semantics remain intentionally open
 
-The current course state values are protected, stable, cooling, weak, and critical. The domain model uses protected to describe an active academic gate, while the other values describe course condition.
+The current course state values are protected, stable, cooling, weak, and critical. `protected` is intentionally retained.
 
-Decision: separate course condition from gate/protection status. Course condition should be stable, cooling, weak, or critical. Gate status should be derived from active obligations, assessments, and recurring requirements.
+The earlier reconciliation treated `protected` as an active academic gate and proposed removing it from the course-state enum. That decision is no longer accepted.
 
-A course may therefore be weak and have an active gate at the same time.
+Current decision: keep `protected` in the schema while its exact semantics and transition rules are refined deliberately. It should not be defined as an online-course state, timetable condition, assessment flag, or deadline state. Those may be contexts in which protection is useful, but they do not define the concept.
+
+Working interpretation:
+
+> Protected indicates that an important academic condition or maintenance pattern should be deliberately preserved from being displaced or neglected.
+
+A future design may separate academic condition from protection/gate status if implementation shows that one state value cannot represent both cleanly. That is an open design question, not a migration decision at this stage.
 
 ### 2. Current course state is a projection
 
@@ -93,7 +99,7 @@ These should be hardened deliberately before production. They are separate from 
 
 ### A — Domain integrity
 
-- separate course condition from gate status
+- preserve `protected` while refining its semantics and transition rules
 - enforce one current academic period per user
 - add missing composite ownership constraints
 - define confirmation behavior
