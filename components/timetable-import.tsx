@@ -103,18 +103,30 @@ export function TimetableImport({
       </div>
 
       <form onSubmit={readTimetable} className="mt-5 flex flex-col gap-3 sm:flex-row">
-        <input
-          className={inputClass()}
-          type="file"
-          accept="application/pdf,.pdf"
-          onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-        />
+        <div className="min-w-0 flex-1">
+          <label className="block cursor-pointer rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-3 text-sm transition hover:border-zinc-500">
+            <span className="block font-medium text-zinc-200">Choose timetable PDF</span>
+            <span className="mt-1 block truncate text-xs text-zinc-500">
+              {file ? file.name : "No PDF selected"}
+            </span>
+            <input
+              className="sr-only"
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={(event) => {
+                const selectedFile = event.target.files?.[0] ?? null;
+                setFile(selectedFile);
+                setMessage("");
+              }}
+            />
+          </label>
+        </div>
         <button
           type="submit"
           disabled={busy || !file}
-          className="rounded-xl bg-white px-4 py-3 text-sm font-medium text-zinc-950 disabled:opacity-50"
+          className="rounded-xl bg-white px-4 py-3 text-sm font-medium text-zinc-950 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {busy ? "Reading..." : "Read timetable"}
+          {busy ? "Reading..." : file ? "Read timetable" : "Choose a PDF first"}
         </button>
       </form>
 
