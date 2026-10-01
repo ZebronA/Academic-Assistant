@@ -70,19 +70,39 @@ export function TimetableImport({
     setMessage("");
 
     try {
+      const existingCourses = await repository.listCourses(userId, academicPeriodId);
+      const existingCodes = new Set(
+        existingCourses.map((course) => String((course as { code?: string }).code ?? "").trim().toUpperCase()),
+      );
+      const imported: string[] = [];
+      const skipped: string[] = [];
+
       for (const course of courses) {
+        const code = course.code.trim().toUpperCase();
+
+        if (existingCodes.has(code)) {
+          skipped.push(code);
+          continue;
+        }
+
         await createCourse(repository, {
           userId,
           academicPeriodId,
-          code: course.code,
+          code,
           name: course.name,
           courseType: course.courseType,
         });
+        existingCodes.add(code);
+        imported.push(code);
       }
 
       setCourses([]);
       setFile(null);
-      setMessage("Courses imported. The timetable was used only to establish course information.");
+      setMessage(
+        skipped.length
+          ? `Imported ${imported.length} course${imported.length === 1 ? "" : "s"}; skipped ${skipped.length} already existing: ${skipped.join(", ")}.`
+          : `Imported ${imported.length} courses. The timetable was used only to establish course information.`,
+      );
       await onImported();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not import the courses.");
