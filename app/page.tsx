@@ -285,7 +285,7 @@ export default function Home() {
     if (!userId || !period) return;
     const course = courses.find((item) => item.id === id);
     if (!course) return;
-    if (!window.confirm(`Remove ${course.code} from this academic period? Existing academic records will be preserved.`)) return;
+    if (removeConfirmationCode.trim().toUpperCase() !== course.code) return;
 
     setBusy(true);
     setMessage("");
@@ -293,10 +293,14 @@ export default function Home() {
     try {
       await archiveCourse(repository, { userId, academicPeriodId: period.id, courseId: id });
       if (editingCourseId === id) cancelEditingCourse();
-      setMessage("Course removed from the active course list. Existing records were preserved.");
+      else {
+        setRemoveConfirmationCourseId(null);
+        setRemoveConfirmationCode("");
+      }
+      setMessage("Unit archived from the active unit list. Existing records were preserved.");
       await loadAcademicData(userId);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not remove course.");
+      setMessage(error instanceof Error ? error.message : "Could not archive unit.");
     } finally {
       setBusy(false);
     }
