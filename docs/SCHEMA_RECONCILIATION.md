@@ -16,17 +16,13 @@ All listed tables currently have RLS enabled.
 
 ### 1. Protected semantics remain intentionally open
 
-The current course state values are protected, stable, cooling, weak, and critical. `protected` is intentionally retained.
+The current course state values are protected, stable, cooling, weak, and critical. `protected` is intentionally retained for now because it is already part of the live course-state schema.
 
-The earlier reconciliation treated `protected` as an active academic gate and proposed removing it from the course-state enum. That decision is no longer accepted.
+The reviewed product discussion does not define `protected` or establish its transition rules. The earlier reconciliation therefore went beyond the available design evidence when it treated `protected` as an academic gate and proposed removing it.
 
-Current decision: keep `protected` in the schema while its exact semantics and transition rules are refined deliberately. It should not be defined as an online-course state, timetable condition, assessment flag, or deadline state. Those may be contexts in which protection is useful, but they do not define the concept.
+Current decision: retain `protected` while explicitly marking its semantics as unresolved. Do not redefine it as an online-course state, timetable condition, assessment flag, deadline state, or gate without a further domain decision.
 
-Working interpretation:
-
-> Protected indicates that an important academic condition or maintenance pattern should be deliberately preserved from being displaced or neglected.
-
-A future design may separate academic condition from protection/gate status if implementation shows that one state value cannot represent both cleanly. That is an open design question, not a migration decision at this stage.
+A future design may change the representation once the meaning of `protected` is established. That is an open domain decision, not a migration decision at this stage.
 
 ### 2. Current course state is a projection
 
