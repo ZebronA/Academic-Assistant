@@ -4,6 +4,7 @@ import type {
 } from "@/lib/domain/types";
 
 export interface AcademicRepository {
+  listOpenTasks(userId: string): Promise<unknown[]>;
   createTask(input: CreateTaskInput): Promise<unknown>;
   completeTask(userId: string, taskId: string, completedAt: string): Promise<unknown>;
   createAssessment(input: CreateAssessmentInput): Promise<unknown>;
