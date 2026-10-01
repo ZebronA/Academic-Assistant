@@ -104,18 +104,19 @@ These labels describe current academic condition, not student ability or persona
 
 ### 4.1 Protected
 
-A course is protected when an active academic gate requires continued attention.
+`protected` is retained as a current course-state value, but its meaning is broader than a single type of obligation.
 
-Examples may include:
+Working interpretation:
 
-- a weekly quiz that expires soon
-- a recurring requirement that must be completed
-- a near-term mandatory academic obligation
-- a confirmed assessment with immediate preparation requirements
+> Protected indicates that an important academic condition or maintenance pattern should be deliberately preserved from being displaced or neglected.
 
-Protected does not necessarily mean the course is weak.
+Online or recurring requirements may be examples of situations where protection is useful. They are not the definition of `protected`.
 
-It means the course has a time-sensitive obligation that must not be allowed to lapse.
+Likewise, a deadline, assessment, timetable entry, or academic gate may create a reason to protect something without automatically making `protected` synonymous with that gate.
+
+Protected does not necessarily mean the course is weak. It may coexist with healthy academic performance while indicating that some important condition or maintenance pattern should be deliberately preserved.
+
+The exact evidence and transition rules for entering or leaving `protected` remain unresolved. Until those rules are deliberately defined, the state engine must not invent them or reduce `protected` to a particular implementation such as online-course protection.
 
 ### 4.2 Stable
 
@@ -556,35 +557,29 @@ The exact transition rules must be implemented explicitly rather than left to th
 
 ## 16. Protected State Transitions
 
-Protected can coexist conceptually with other academic conditions.
+`protected` remains part of the current five-state vocabulary, but its transition rules are intentionally not finalized.
 
-The current five-state database uses one state value, so the implementation needs care here.
+Protection may relate to preserving an important academic condition or maintenance pattern. A weekly requirement, online activity, assessment preparation need, or another recurring academic condition may provide a concrete reason for protection, but none of these examples defines the state by itself.
 
-A course can be:
-
-~~~
-academically stable
-+
-protected by a weekly gate
-~~~
-
-The long-term domain may therefore need to distinguish:
+The current model therefore distinguishes the concept from any one implementation mechanism:
 
 ~~~
-academic condition
+protected
+≠
+online course
+
+protected
+≠
+assessment deadline
+
+protected
+≠
+timetable slot
 ~~~
 
-from:
+The system should not manufacture transition rules until the domain meaning is sufficiently precise. When the rules are eventually defined, they should be deterministic, evidence-based, and explainable.
 
-~~~
-active protection / gate status
-~~~
-
-rather than forcing both concepts into one enum.
-
-This is a domain decision to resolve before finalizing the state schema.
-
-Until resolved, the application must not pretend that protected fully represents both concepts.
+A future refinement may still separate academic condition from protection/gate status if actual implementation demonstrates that one state value cannot represent the concepts cleanly. That remains an open design question rather than a decision to remove `protected` now.
 
 ## 17. State Calculation
 
@@ -708,11 +703,11 @@ The initial rules should be easy to inspect and modify.
 
 The following issues remain intentionally unresolved.
 
-### A. Protected vs academic condition
+### A. Protected semantics
 
-Should protected remain a course state, or should protection become a separate dimension?
+What concrete evidence and transition rules should determine `protected`?
 
-The current model suggests that separating:
+The current model intentionally retains `protected` in the course-state vocabulary while leaving its exact semantics open for deliberate refinement. A future design may separate:
 
 ~~~
 academic_condition
@@ -721,10 +716,12 @@ academic_condition
 from:
 
 ~~~
-gate/protection status
+protection / gate status
 ~~~
 
-may eventually be cleaner.
+if actual implementation demonstrates that one state value cannot represent both concepts cleanly.
+
+This is not yet a decision to remove `protected`, and online-course protection is not its definition.
 
 ### B. Recency thresholds
 
