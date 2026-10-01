@@ -1,7 +1,7 @@
-import type { CourseState } from "@/lib/domain/types";
+import type { UnitState } from "@/lib/domain/types";
 
-export interface CourseStateSignals {
-  currentState?: CourseState | null;
+export interface UnitStateSignals {
+  currentState?: UnitState | null;
   backlog: boolean;
   overdueTasks: number;
   missedAssessments: number;
@@ -10,8 +10,8 @@ export interface CourseStateSignals {
   now?: string;
 }
 
-export interface CalculatedCourseState {
-  state: CourseState;
+export interface CalculatedUnitState {
+  state: UnitState;
   backlog: boolean;
   reason: string;
 }
@@ -21,7 +21,7 @@ const daysSince = (value: string | null | undefined, now: string) => {
   return Math.max(0, (Date.parse(now) - Date.parse(value)) / 86400000);
 };
 
-export function calculateCourseState(signals: CourseStateSignals): CalculatedCourseState {
+export function calculateUnitState(signals: UnitStateSignals): CalculatedUnitState {
   const now = signals.now ?? new Date().toISOString();
 
   if (signals.currentState === "protected") {
@@ -52,7 +52,7 @@ export function calculateCourseState(signals: CourseStateSignals): CalculatedCou
     return {
       state: "weak",
       backlog: true,
-      reason: "Unresolved academic backlog is recorded for this course.",
+      reason: "Unresolved academic backlog is recorded for this unit.",
     };
   }
 
