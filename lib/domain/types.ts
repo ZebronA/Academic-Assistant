@@ -6,6 +6,21 @@ export type AssessmentType = "quiz" | "cat" | "exam" | "assignment" | "practical
 export type Source = "user" | "assistant" | "system" | "imported" | "university";
 export type ConfirmationStatus = "proposed" | "confirmed" | "rejected";
 
+export interface CreateAcademicPeriodInput {
+  userId: string;
+  name: string;
+  startsOn: string;
+  endsOn: string;
+}
+
+export interface CreateCourseInput {
+  userId: string;
+  academicPeriodId: string;
+  code: string;
+  name: string;
+  courseType: "technical" | "conceptual" | "practical" | "mathematical" | "online" | "mixed";
+}
+
 export interface CreateTaskInput {
   userId: string; courseId?: string | null; recurringRequirementId?: string | null;
   title: string; description?: string | null; taskType: TaskType;
