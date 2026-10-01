@@ -14,32 +14,37 @@ The project has a Next.js/React/TypeScript application, Git/GitHub repository, S
 
 The existing database is a foundation. It must be reconciled against the canonical domain documentation before application logic is built around it.
 
-## 3. Phase 1 — Domain Reconciliation
+## 3. Phase 1 — MVP Domain Reconciliation
 
-Compare the documented model with Supabase for:
+The MVP domain is now sufficiently defined to implement the core decision loop.
 
-- users/profiles
-- academic periods
-- courses and course characteristics
-- timetable and actual events
-- tasks and assessments
-- recurring requirements
-- observations and study sessions
-- course state and state history
-- provenance and confirmation
-- lifecycle
-- availability
-- next-action representation
+Established MVP concepts:
 
-Resolve before implementation:
+- academic period
+- course
+- course state
+- task
+- assessment
+- recurring requirement
+- timetable
+- academic event
+- observation
+- study session
+- course state history
+- protected preservation state
+- deterministic priority decision
 
-- whether protected is a course condition or a separate gate dimension
-- when events/observations should be proposed rather than confirmed
-- how recurring occurrences are generated without duplicates
-- whether assessment results need a dedicated entity
-- how availability is represented
+The MVP intentionally defers:
 
-Exit condition: every V0 concept has an intentional schema decision.
+- recurring occurrence generation
+- persistent availability
+- assessment result entity
+- richer course characteristics
+- assistant interface
+- reminders
+- integrations
+
+Exit condition: the database and application can represent the student's current academic situation and produce a defensible next action.
 
 ## 4. Phase 2 — Application and Domain Layer
 
@@ -236,7 +241,7 @@ Only after the deterministic system works reliably should usage patterns influen
 
 Personalization may adjust recommendations but must not override explicit academic constraints.
 
-## 16. V0 Scope
+## 16. MVP Scope
 
 ### Required
 
@@ -256,13 +261,14 @@ Personalization may adjust recommendations but must not override explicit academ
 - dashboard
 - next-action loop
 
-### Later
+### Deferred
 
-- availability model
+- recurring occurrence generation
+- persistent availability model
 - richer course characteristics
 - assessment results
-- notifications
 - natural-language assistant
+- reminders
 - external integrations
 - advanced personalization
 - predictive analytics
@@ -307,19 +313,20 @@ These can hide whether the core academic decision loop actually works.
 
 ~~~text
 1. Reconcile domain model ↔ Supabase
-2. Resolve schema decisions
-3. Build application/domain layer
-4. Build state engine
-5. Build priority engine
-6. Build dashboard
-7. Build action loop
-8. Add availability/context
+2. Build application/domain commands
+3. Build deterministic state engine
+4. Build deterministic priority engine
+5. Build dashboard
+6. Build action loop
+7. Deploy MVP
+8. Use the system with real academic data
 9. Add recurring occurrence generation
-10. Add assistant interface
-11. Add reminders
-12. Add assessment results
-13. Add integrations
-14. Add personalization
+10. Add availability/context
+11. Add assistant interface
+12. Add reminders
+13. Add assessment results
+14. Add integrations
+15. Add personalization
 ~~~
 
 ## 20. Real Academic Data
