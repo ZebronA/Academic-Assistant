@@ -1,17 +1,17 @@
 import type {
-  CreateAcademicPeriodInput, UpdateCourseInput,
-  CreateAssessmentInput, CreateCourseInput, CreateObservationInput, CreateRecurringRequirementInput,
+  CreateAcademicPeriodInput, UpdateUnitInput,
+  CreateAssessmentInput, CreateUnitInput, CreateObservationInput, CreateRecurringRequirementInput,
   CreateTaskInput, RecordAcademicEventInput, RecordStudySessionInput,
 } from "@/lib/domain/types";
 
 export interface AcademicRepository {
   getCurrentAcademicPeriod(userId: string): Promise<unknown | null>;
   createAcademicPeriod(input: CreateAcademicPeriodInput): Promise<unknown>;
-  listCourses(userId: string, academicPeriodId: string): Promise<unknown[]>;
-  createCourse(input: CreateCourseInput): Promise<unknown>;
-  updateCourse(input: UpdateCourseInput): Promise<unknown>;
-  archiveCourse(userId: string, academicPeriodId: string, courseId: string): Promise<unknown>;
-  listCourseStates(userId: string): Promise<unknown[]>;
+  listUnits(userId: string, academicPeriodId: string): Promise<unknown[]>;
+  createUnit(input: CreateUnitInput): Promise<unknown>;
+  updateUnit(input: UpdateUnitInput): Promise<unknown>;
+  archiveUnit(userId: string, academicPeriodId: string, unitId: string): Promise<unknown>;
+  listUnitStates(userId: string): Promise<unknown[]>;
   listUpcomingAssessments(userId: string, academicPeriodId: string): Promise<unknown[]>;
   listOpenTasks(userId: string): Promise<unknown[]>;
   createTask(input: CreateTaskInput): Promise<unknown>;
