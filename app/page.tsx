@@ -149,12 +149,31 @@ export default function Home() {
   }
 
   useEffect(() => {
-    client.auth.getUser().then(async ({ data }) => {
-      if (data.user) {
+    let active = true;
+
+    async function restoreSession() {
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get("code");
+
+      if (code) {
+        const { error } = await client.auth.exchangeCodeForSession(code);
+        url.searchParams.delete("code");
+        window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+
+        if (error && active) {
+          setMessage("That sign-in link could not be completed. Request a new sign-in link and try again.");
+          return;
+        }
+      }
+
+      const { data, error } = await client.auth.getUser();
+      if (active && !error && data.user) {
         setUserId(data.user.id);
         await loadAcademicData(data.user.id);
       }
-    });
+    }
+
+    void restoreSession();
 
     const { data: listener } = client.auth.onAuthStateChange((_event, session) => {
       const id = session?.user.id ?? null;
@@ -171,7 +190,10 @@ export default function Home() {
       }
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   async function signIn(event: FormEvent) {
