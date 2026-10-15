@@ -181,7 +181,10 @@ export default function Home() {
 
     const { error } = await client.auth.signInWithOtp({
       email: email.trim(),
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        shouldCreateUser: false,
+      },
     });
 
     setMessage(error ? error.message : "Check your email for the sign-in link.");
