@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -9,23 +8,9 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/", requestUrl.origin));
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!url || !key) {
-    return NextResponse.redirect(
-      new URL("/?auth_error=missing_config", requestUrl.origin)
-    );
-  }
-
-  const supabase = createClient(url, key);
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-  if (error) {
-    return NextResponse.redirect(
-      new URL("/?auth_error=callback_failed", requestUrl.origin)
-    );
-  }
-
-  return NextResponse.redirect(new URL("/", requestUrl.origin));
+  // Keep the PKCE exchange in the browser so Supabase can persist the
+  // resulting session in the same storage used by the client-side app.
+  const destination = new URL("/", requestUrl.origin);
+  destination.searchParams.set("code", code);
+  return NextResponse.redirect(destination);
 }
